@@ -1,0 +1,7 @@
+type: FastRAGFAISSStore
+faiss_index_factory_str: Flat
+embedding_dim: 768
+similarity: dot_product
+sql_url: sqlite:////path/to/file.sql
+faiss_index_path: /path/to/index
+faiss_config_path: /path/to/file.json

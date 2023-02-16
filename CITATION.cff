@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Izsak"
+  given-names: "Peter"
+  orcid: "https://orcid.org/0000-0001-8354-6823"
+- family-names: "Berchansky"
+  given-names: "Moshe"
+  orcid: "https://orcid.org/0000-0001-9227-8939"
+- family-names: "Fleischer"
+  given-names: "Daniel"
+  orcid: "https://orcid.org/0000-0003-4031-4410"
+- family-names: "Laperdon"
+  given-names: "Ronen"
+title: "fastRAG: Efficient Retrieval Augmentation and Generation Framework"
+version: 1.0
+license: Apache-2.0
+date-released: 2023-02-16
+url: "https://github.com/IntelLabs/fastrag"

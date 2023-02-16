@@ -1,0 +1,5 @@
+type: SentenceTransformersRanker
+model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
+top_k: 10
+use_gpu: True
+batch_size: 32

@@ -1,0 +1,6 @@
+type: ColBERTRanker
+checkpoint_path: /path/to/colbert/model
+top_k: 10
+use_gpu: True
+query_maxlen: 120   # Should match the index max lengths
+doc_maxlen: 120

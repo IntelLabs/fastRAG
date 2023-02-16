@@ -1,0 +1,4 @@
+type: ElasticsearchDocumentStore
+host: localhost                 # or URL of elastic instance
+port: 80
+index: elastic_index_1

@@ -1,0 +1,8 @@
+type: FiDReader
+model_name_or_path: /path/to/FiD/model
+top_k: 2              # Number of independently generated text to return.
+max_length: 100       # Maximum length of generated text.
+min_length: 2         # Minimum length of generated text.
+num_beams: 3          # Number of beams for beam search. 1 means no beam search.
+use_gpu: True
+input_converter_tokenizer_max_len: 512

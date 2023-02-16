@@ -1,0 +1,3 @@
+type: ColBERTRetriever
+use_gpu: False
+top_k: 10

@@ -1,0 +1,33 @@
+components:
+- name: Store
+  params:
+    index_path: /path/to/index
+    checkpoint_path: Intel/ColBERT-NQ
+    collection_path: /path/to/collection.tsv
+  type: PLAIDDocumentStore
+- name: Retriever
+  params:
+    document_store: Store
+    top_k: 10
+    use_gpu: false
+  type: ColBERTRetriever
+- name: Reader
+  params:
+    input_converter_tokenizer_max_len: 512
+    max_length: 100
+    min_length: 2
+    model_name_or_path: /path/to/FiD/model
+    num_beams: 3
+    top_k: 2
+    use_gpu: true
+  type: FiDReader
+pipelines:
+- name: my_pipeline
+  nodes:
+  - inputs:
+    - Query
+    name: Retriever
+  - inputs:
+    - Retriever
+    name: Reader
+version: 1.12.2

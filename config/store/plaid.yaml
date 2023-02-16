@@ -1,0 +1,4 @@
+type: PLAIDDocumentStore
+index_path: /path/to/index
+checkpoint_path: Intel/ColBERT-NQ
+collection_path: /path/to/collection.tsv

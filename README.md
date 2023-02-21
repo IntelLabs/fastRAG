@@ -175,6 +175,9 @@ python generate_pipeline.py --path "retriever,reranker,reader"  \
 
 Pipelines can be run inline (code, service, notebook) once initialized properly. For a concrete example see this [notebook](examples/simple_oqda_pipeline.ipynb).
 
+#### Stand Alone UI Demos
+See [Demo](demo/) for a script creating stand alone demos for several workflows; the script creates a REST service and a UI service, ready to be used. Continue reading for more details on these services. 
+
 #### Serve a pipeline via a REST service
 
 One can start a REST server with a defined pipeline YAML and send queries for processing or benchmarking. A pipeline is

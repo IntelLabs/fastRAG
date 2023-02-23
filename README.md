@@ -23,7 +23,7 @@ fast**RAG** is a research framework designed to facilitate the building of retri
 
 - **Retrieval Augmented X**: A framework for developing efficient and fast retrieval augmented generative applications using the latest transformer-based NLP models (but not only).
 - **Optimized Models**: Includes optimized models of supported pipelines with greater compute efficiency.
-- **Intel Optimizations** (**TBA**): Leverages the latest optimizations developed by Intel, and for Intel Hardware, for running pipelines with maximum hardware utilization, reduced latency and increased throughput.
+- **Intel Optimizations** (**TBA**): Leverage the latest optimizations developed by Intel for running pipelines with maximum hardware utilization, reduced latency, and increased throughput, using frameworks such as [Intel extensions for PyTorch (IPEX)](https://github.com/intel/intel-extension-for-pytorch) and [Intel extension for Transformers](https://github.com/intel/intel-extension-for-transformers).
 - **Customizable**: Built using Haystack and HuggingFace. All of fastRAG's components are 100% Haystack compatible.
 
 ## :round_pushpin: Installation
@@ -63,12 +63,17 @@ pip install .[dev]
 
 For a short overview of the different models see [Models Overview](models.md).
 
+Unique components in fastRAG:
+
 - [**PLAID**](https://arxiv.org/abs/2205.09707) - An extremely efficient engine for late interaction retrieval.
 - [**ColBERT**](https://arxiv.org/abs/2112.01488) - A Retriever (used with PLAID) and re-ranker (used with dense embeddings) utilizing late interaction for relevancy scoring.
 - [**Fusion-in-Decoder (FiD)**](https://arxiv.org/abs/2007.01282) - A generative reader for multi-document retrieval augmented tasks.
-- [Retrieval Augmented Summarization with **T5** family models (such as LongT5, FLAN-T5)](https://arxiv.org/abs/2112.07916) - An encoder-decoder model based on T5 with support for long input, supporting summarization/translation prompts.
 - [**Stable Diffusion Generator**](https://arxiv.org/pdf/2112.10752.pdf) - A text-to-image generator. Pluggable to any pipeline output.
 - [Retrieval-Oriented **Knowledge Graph Construction**](https://arxiv.org/abs/2010.01057) - A pipeline component for extracting named-entities and creating a graph of all the entities specified in the retrieved documents, with the relations between each pair of related entities.
+
+Addition components:
+
+- [Retrieval Augmented Summarization with **T5** family models (such as LongT5, FLAN-T5)](https://arxiv.org/abs/2112.07916) - An encoder-decoder model based on T5 with support for long input, supporting summarization/translation prompts.
 
 ## :rocket: Example Use Cases
 
@@ -175,7 +180,8 @@ python generate_pipeline.py --path "retriever,reranker,reader"  \
 
 Pipelines can be run inline (code, service, notebook) once initialized properly. For a concrete example see this [notebook](examples/simple_oqda_pipeline.ipynb).
 
-#### Stand Alone UI Demos
+#### Standalone UI Demos
+
 See [Demo](demo/) for a script creating stand alone demos for several workflows; the script creates a REST service and a UI service, ready to be used. Continue reading for more details on these services. 
 
 #### Serve a pipeline via a REST service
@@ -210,13 +216,11 @@ API_ENDPOINT=http://localhost:8000 \
              python -m streamlit run fastrag/ui/webapp.py
 ```
 
-### Fine-tuning Pipelines
-
-#### Creating Indexes
+### Creating Indexes
 
 See [Indexing Scripts](scripts/indexing/) for information about how to create different types of indexes.
 
-#### Pre-training/Fine-tuning Models
+### Pre-training/Fine-tuning Models
 
 We offer an array of training scripts, to finetune models of your choice for various usecases. See [Models Overview](models.md) for examples, model descriptions, and more.
 

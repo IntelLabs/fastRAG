@@ -20,3 +20,7 @@ Use the  `--help` flag for a list of available configurations.
 | Image   | Abstractive Q&A demo, with an image generation model for the answer.                | `QADIFF`    |
 
 ColBERT demo with a wikipedia index takes about 15 minutes to load up. Also, see remark about GPU usage in the [README](../README.md#plaid-requirements).
+
+## Demo Screenshot
+
+![alt text](../assets/qa_demo.png)

@@ -24,7 +24,7 @@ fast**RAG** is a research framework designed to facilitate the building of retri
 - **Retrieval Augmented X**: A framework for developing efficient and fast retrieval augmented generative applications using the latest transformer-based NLP models (but not only).
 - **Optimized Models**: Includes optimized models of supported pipelines with greater compute efficiency.
 - **Intel Optimizations** (**TBA**): Leverage the latest optimizations developed by Intel for running pipelines with maximum hardware utilization, reduced latency, and increased throughput, using frameworks such as [Intel extensions for PyTorch (IPEX)](https://github.com/intel/intel-extension-for-pytorch) and [Intel extension for Transformers](https://github.com/intel/intel-extension-for-transformers).
-- **Customizable**: Built using Haystack and HuggingFace. All of fastRAG's components are 100% Haystack compatible.
+- **Customizable**: Built using [Haystack](https://github.com/deepset-ai/haystack) and HuggingFace. All of fastRAG's components are 100% Haystack compatible.
 
 ## :round_pushpin: Installation
 

@@ -45,7 +45,7 @@ if __name__ == "__main__":
     path = os.getcwd()
 
     # Create REST server
-    cmd = f"python -m fastrag.rest_api.application {path}/config/TASKCONFIGURATION"
+    cmd = f"python -m fastrag.rest_api.application --config={path}/config/TASKCONFIGURATION"
     cmd = cmd.replace("TASKCONFIGURATION", TASKS[args.task_config])
     run_service(cmd)
 

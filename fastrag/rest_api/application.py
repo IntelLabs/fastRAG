@@ -14,8 +14,8 @@
 # This file is based on https://github.com/deepset-ai/haystack
 # See: https://github.com/deepset-ai/haystack/blob/main/rest_api/application.py
 
+import argparse
 import logging
-import sys
 
 import uvicorn
 
@@ -29,6 +29,14 @@ app = get_app()
 
 
 if __name__ == "__main__":
-    config = sys.argv[1]
-    app.pipeline = fastrag.load_pipeline(config)
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--config", type=str, required=True, help="path to pipeline configuration (yaml)"
+    )
+    parser.add_argument(
+        "--host", type=str, default="0.0.0.0", help="host IP to use for service API calls"
+    )
+    parser.add_argument("--port", type=int, default=8000, help="service port number to use")
+    args = parser.parse_args()
+    app.pipeline = fastrag.load_pipeline(args.config)
+    uvicorn.run(app, host=args.host, port=args.port)

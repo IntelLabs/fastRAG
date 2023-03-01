@@ -241,6 +241,7 @@ This is a demo of a generative Summarization pipeline, using the fastRAG package
                     st.session_state.results,
                     st.session_state.raw_json,
                     st.session_state.images,
+                    _,
                 ) = query(
                     question,
                     top_k_retriever=top_k_retriever,

@@ -182,7 +182,7 @@ Pipelines can be run inline (code, service, notebook) once initialized properly.
 
 #### Standalone UI Demos
 
-See [Demo](demo/) for a script creating stand alone demos for several workflows; the script creates a REST service and a UI service, ready to be used. Continue reading for more details on these services. 
+See [Demo](demo/) for a script creating stand alone demos for several workflows; the script creates a REST service and a UI service, ready to be used. Continue reading for more details on these services.
 
 #### Serve a pipeline via a REST service
 
@@ -192,7 +192,7 @@ generated according to [Pipeline Generation](#pipeline-configuration-generation)
 Run the following:
 
 ```bash
-python -m fastrag.rest_api.application pipeline.yaml
+python -m fastrag.rest_api.application --config=pipeline.yaml
 ```
 
 This will start a `uvicorn` server and build a pipeline as defined in the YAML file.

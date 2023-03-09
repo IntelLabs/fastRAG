@@ -1,5 +1,5 @@
 type: FiDReader
-model_name_or_path: /path/to/FiD/model
+model_name_or_path: Intel/fid_t5_large_nq
 top_k: 2              # Number of independently generated text to return.
 max_length: 100       # Maximum length of generated text.
 min_length: 2         # Minimum length of generated text.

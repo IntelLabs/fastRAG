@@ -80,7 +80,7 @@ reranker = SentenceTransformersRanker(model_name_or_path="cross-encoder/ms-marco
 reader = FiDReader(
     input_converter_tokenizer_max_len=250,
     max_length=20,
-    model_name_or_path="path/to/fid",
+    model_name_or_path="Intel/fid_t5_large_nq",
     use_gpu=True,
 )
 

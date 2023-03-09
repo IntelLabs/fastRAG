@@ -22,7 +22,7 @@ components:
     input_converter_tokenizer_max_len: 256
     max_length: 30
     min_length: 2
-    model_name_or_path: /path/to/FiD/model
+    model_name_or_path: Intel/fid_t5_large_nq
     num_beams: 1
     top_k: 1
     use_gpu: true

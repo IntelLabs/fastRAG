@@ -46,7 +46,9 @@ DEFAULT_ANSWER_AT_STARTUP = os.getenv("DEFAULT_ANSWER_AT_STARTUP", "Paris")
 DEFAULT_DOCS_FROM_RETRIEVER = int(os.getenv("DEFAULT_DOCS_FROM_RETRIEVER", "60"))
 DEFAULT_DOCS_FROM_RERANKER = int(os.getenv("DEFAULT_DOCS_FROM_RERANKER", "15"))
 DEFAULT_NUMBER_OF_ANSWERS = int(os.getenv("DEFAULT_NUMBER_OF_ANSWERS", "1"))
+DEFAULT_MIN_SUMMARIZATION_LENGTH = int(os.getenv("DEFAULT_MIN_SUMMARIZATION_LENGTH", "30"))
 DEFAULT_MAX_SUMMARIZATION_LENGTH = int(os.getenv("DEFAULT_MAX_SUMMARIZATION_LENGTH", "180"))
+
 
 # Labels for the evaluation
 EVAL_LABELS = os.getenv("EVAL_FILE", str(Path(__file__).parent / "eval_labels_example.csv"))
@@ -148,6 +150,15 @@ This is a demo of a generative Summarization pipeline, using the fastRAG package
         on_change=reset_results,
         disabled=not st.session_state.full_pipeline,
     )
+    min_summary_length = st.sidebar.slider(
+        "Min. summary length",
+        min_value=10,
+        max_value=100,
+        value=DEFAULT_MIN_SUMMARIZATION_LENGTH,
+        step=1,
+        on_change=reset_results,
+        disabled=False,
+    )
     max_summary_length = st.sidebar.slider(
         "Max. summary length",
         min_value=10,
@@ -248,7 +259,12 @@ This is a demo of a generative Summarization pipeline, using the fastRAG package
                     top_k_reranker=top_k_reranker,
                     top_k_reader=top_k_summaries,
                     full_pipeline=st.session_state.full_pipeline,
-                    pipeline_params_dict={"Reader": {"max_length": max_summary_length}},
+                    pipeline_params_dict={
+                        "Reader": {
+                            "max_length": max_summary_length,
+                            "min_length": min_summary_length,
+                        }
+                    },
                 )
             except JSONDecodeError as je:
                 st.error(

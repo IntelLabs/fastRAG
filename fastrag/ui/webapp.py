@@ -50,6 +50,13 @@ EVAL_LABELS = os.getenv("EVAL_FILE", str(Path(__file__).parent / "eval_labels_ex
 DISABLE_FILE_UPLOAD = bool(os.getenv("DISABLE_FILE_UPLOAD"))
 DISABLE_FILE_UPLOAD = True
 
+EXAMPLES = [
+    "",
+    "Who are the founders of Intel Corporation?",
+    "What was the first hardware released by Intel Corporation?",
+    "What are the main ingredients needed for making Beer?",
+]
+
 
 def set_state_if_absent(key, value):
     if key not in st.session_state:
@@ -71,6 +78,9 @@ def main():
     set_state_if_absent("random_question_requested", False)
     set_state_if_absent("images", None)
     set_state_if_absent("relations", None)
+    set_state_if_absent("query_txtBox_placeholder", "")
+    set_state_if_absent("query_slctBox_val", "")
+    set_state_if_absent("query_txtBox_maxLen", 100)
 
     # Small callback to reset the interface in case the text of the question changes
     def reset_results(*args):
@@ -79,6 +89,9 @@ def main():
         st.session_state.raw_json = None
         st.session_state.images = None
         st.session_state.relations = None
+
+    # st.session_state.query_txtBox_placeholder =
+    st.session_state.query_slctBox_val = ""
 
     # Title
     st.write("# Q&A Demo")
@@ -165,9 +178,25 @@ This is a demo of a generative Q&A pipeline, using the fastRAG package.
     )
 
     # Search bar
-    question = st.text_input(
-        "", value=st.session_state.question, max_chars=100, on_change=reset_results
-    )
+    # question = st.text_input(
+    #     label="",
+    #     # placeholder=st.session_state.query_txtBox_placeholder,
+    #     max_chars=100,
+    #     on_change=reset_results,
+    #     label_visibility="visible",
+    #     value=st.session_state.query_slctBox_val,
+    # )
+
+    # example_q = st.selectbox(
+    #     label="Examples",
+    #     options=tuple(EXAMPLES),
+    #     key="query_slctBox_val",
+    #     # on_change=set_example_as_query((st.session_state.query_slctBox_val))
+    # )
+
+    examples = st.selectbox("Examples", tuple(EXAMPLES))
+
+    question = st.text_input(label="Enter a question", max_chars=100, value=examples)
 
     # Run button
     run_pressed = st.button("Run")
@@ -221,7 +250,7 @@ This is a demo of a generative Q&A pipeline, using the fastRAG package.
         display_runtime_plot(st.session_state.raw_json)
 
     if st.session_state.images or st.session_state.results:
-        st.write("## Results:")
+        st.write("### Response")
 
     if st.session_state.relations:
         source_code = get_kg_html(st.session_state.relations)
@@ -246,9 +275,6 @@ This is a demo of a generative Q&A pipeline, using the fastRAG package.
             st.markdown(image_markdown, unsafe_allow_html=True)
 
     if st.session_state.results:
-
-        st.write("### The answer to the question is:")
-
         for count, result in enumerate(st.session_state.results):
             if result["answer"]:
                 answer = result["answer"]
@@ -257,18 +283,17 @@ This is a demo of a generative Q&A pipeline, using the fastRAG package.
                     markdown(str(annotation(answer, "ANSWER", "#8ef"))),
                     unsafe_allow_html=True,
                 )
-                st.write("#### The relevant documents are:")
+                st.write("___")
+                st.write("#### Supporting documents")
                 for doc_i, doc in enumerate(result["document"]):
                     st.markdown(f"**Document {doc_i + 1}:** {doc}")
             else:
                 st.info(
                     "🤔 &nbsp;&nbsp; fastRAG is unsure whether any of the documents contain an answer to your question. Try to reformulate it!"
                 )
-                st.write("**Relevance:** ", result["relevance"])
-
-            st.write("___")
-
+                # st.write("**Relevance:** ", result["relevance"])
         if debug:
+            st.write("___")
             st.subheader("REST API JSON response")
             st.write(st.session_state.raw_json)
 

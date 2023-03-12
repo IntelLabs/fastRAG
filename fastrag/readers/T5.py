@@ -41,7 +41,12 @@ class T5Reader(Seq2SeqGenerator):
 
     # a function to execute predict directly
     def predict(
-        self, query: str, documents: List[Document], top_k: int = 1, max_length: int = None
+        self,
+        query: str,
+        documents: List[Document],
+        top_k: int = 1,
+        max_length: int = None,
+        min_length: int = None,
     ) -> dict:
         logger.info(
             f"in method: {getframeinfo(currentframe()).function}, line: {getframeinfo(currentframe()).lineno}"
@@ -49,6 +54,10 @@ class T5Reader(Seq2SeqGenerator):
         if max_length:
             logger.info(f"Changing max_length to: {max_length}")
             self.max_length = max_length
+        if min_length:
+            logger.info(f"Changing min_length to: {min_length}")
+            self.min_length = min_length
+        logger.info(f"self.min_length: {self.min_length}")
         logger.info(f"self.max_length: {self.max_length}")
         if isinstance(documents, list) and all([isinstance(doc, Document) for doc in documents]):
             return super().predict(
@@ -59,7 +68,12 @@ class T5Reader(Seq2SeqGenerator):
 
     # a function to execute predict as part of haysack pipeline
     def run(
-        self, query: str, documents: List[Document], top_k: int = 1, max_length: int = None
+        self,
+        query: str,
+        documents: List[Document],
+        top_k: int = 1,
+        max_length: int = None,
+        min_length: int = None,
     ) -> dict:
         logger.info(
             f"in method: {getframeinfo(currentframe()).function}, line: {getframeinfo(currentframe()).lineno}"
@@ -67,6 +81,10 @@ class T5Reader(Seq2SeqGenerator):
         if max_length:
             logger.info(f"Changing max_length to: {max_length}")
             self.max_length = max_length
+        if min_length:
+            logger.info(f"Changing min_length to: {min_length}")
+            self.min_length = min_length
+        logger.info(f"self.min_length: {self.min_length}")
         logger.info(f"self.max_length: {self.max_length}")
         if isinstance(documents, list) and all([isinstance(doc, Document) for doc in documents]):
             return super().run(
@@ -110,6 +128,7 @@ class T5Reader(Seq2SeqGenerator):
         top_k: int = None,
         batch_size: int = None,
         max_length: int = None,
+        min_length: int = None,
     ):
         assert len(queries) == len(documents)
         logger.info(
@@ -118,6 +137,10 @@ class T5Reader(Seq2SeqGenerator):
         if max_length:
             logger.info(f"Changing max_length to: {max_length}")
             self.max_length = max_length
+        if min_length:
+            logger.info(f"Changing min_length to: {min_length}")
+            self.min_length = min_length
+        logger.info(f"self.min_length: {self.min_length}")
         logger.info(f"self.max_length: {self.max_length}")
         return super().run_batch(queries=queries, documents=documents, top_k=top_k)
 
@@ -140,8 +163,8 @@ class _T5Converter:
         preprocessed_doc = ". ".join([doc.content for doc in documents])
         # preprocessed_doc = [doc.content for doc in documents]
 
-        if self.mode == "Q&A":
-            prompt_with_content = f"question: {query} context: {preprocessed_doc}"
+        if self.mode == "qa":
+            prompt_with_content = f"Answer the question given the context. Question: {query} Context: {preprocessed_doc}"
         elif self.mode == "translation":
             prompt_with_content = (
                 f"{query}: {preprocessed_doc}"  # for translation use this as tokenizer input

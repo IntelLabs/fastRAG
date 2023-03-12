@@ -178,22 +178,6 @@ This is a demo of a generative Q&A pipeline, using the fastRAG package.
     )
 
     # Search bar
-    # question = st.text_input(
-    #     label="",
-    #     # placeholder=st.session_state.query_txtBox_placeholder,
-    #     max_chars=100,
-    #     on_change=reset_results,
-    #     label_visibility="visible",
-    #     value=st.session_state.query_slctBox_val,
-    # )
-
-    # example_q = st.selectbox(
-    #     label="Examples",
-    #     options=tuple(EXAMPLES),
-    #     key="query_slctBox_val",
-    #     # on_change=set_example_as_query((st.session_state.query_slctBox_val))
-    # )
-
     examples = st.selectbox("Examples", tuple(EXAMPLES))
 
     question = st.text_input(label="Enter a question", max_chars=100, value=examples)

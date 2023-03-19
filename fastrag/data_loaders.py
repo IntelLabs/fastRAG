@@ -4,15 +4,21 @@ import json
 import math
 from abc import abstractmethod
 from argparse import Namespace
-from typing import Dict
+from typing import Dict, List
 
 import pandas as pd
 from datasets import load_dataset
 from haystack.schema import Document
 from tqdm import tqdm
-
 from fastrag.utils import AnswerGroundType, get_has_answer_data, remove_html_from_text
 
+
+try:
+    import nltk
+    nltk.download('punkt')
+    nltk_tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+except ImportError as e:
+    print("nltk is not installed")
 
 class BaseParser:
     def __init__(self, batch_size):
@@ -63,12 +69,39 @@ def hf_id_title_text_concat(doc) -> Document:
     return Document(content=(doc["title"] + "\n" + doc["text"]), id=doc["_id"])
 
 
+def sentences_to_passages(sens, sentences_per_passage=3):
+    sens_count = len(sens)
+
+    sens_batch_count = (sens_count // sentences_per_passage) + 1
+
+    passages = []
+    for sen_batch_index in range(sens_batch_count):
+        sens_current_batch = sens[sen_batch_index*sentences_per_passage: (sen_batch_index+1)*sentences_per_passage]
+        if(len(sens_current_batch) == 0):
+            continue
+            
+        passage_current = " ".join(sens_current_batch)
+        passages.append(passage_current)
+
+    return passages
+
+def wikipedia_hf_multisentence_encoder(doc) -> List[Document]:
+    """encoder for wikipedia dataset from HF datasets"""
+    
+    sentences = nltk_tokenizer.tokenize(str(doc["text"]))
+
+    joined_passages = sentences_to_passages(sentences)
+    
+    return [Document(content=s, id=f"{str(doc['id'])}_{s_idx}", meta={"title": str(doc["title"])}) for s_idx, s in enumerate(joined_passages)]
+
+
 encoding_methods = {
     "wikidpedia_data": wikidpedia_data_encoder,
     "squad_odqa": squad_odqa_encoder,
     "nq_decoder": wiki_odqa_tasks_encoder,
     "tqa_decoder": wiki_odqa_tasks_encoder,
     "wikipedia_hf": wikipedia_hf_encoder,
+    "wikipedia_hf_multisentence": wikipedia_hf_multisentence_encoder,
     "hf_id_title_text": hf_id_title_text,
     "hf_id_title_text_concat": hf_id_title_text_concat,
 }
@@ -95,7 +128,13 @@ class HFDatasetLoader(BaseParser):
             desc="Data chunks",
         ):
             end_size = min((i + 1) * self.batch_size, self.length)
-            docs = [self.encode_fn(self.data[j]) for j in range(i * self.batch_size, end_size)]
+            docs = []
+            for j in range(i * self.batch_size, end_size):
+                encoding_results = self.encode_fn(self.data[j])
+                if(type(encoding_results) == list):
+                    docs.extend(encoding_results)
+                else:
+                    docs.append(encoding_results)
             yield docs
 
 

@@ -1,0 +1,7 @@
+type: fastrag.data_loaders.HFDatasetLoader
+dataset_info:
+    path: "Cohere/wikipedia-22-12"
+    split: "train"
+    name: "en"
+encoding_method: "wikipedia_hf_multisentence"
+batch_size: 10000

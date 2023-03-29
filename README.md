@@ -203,7 +203,6 @@ These are the following endpoint:
 
 - `status`: sanity.
 - `version`: project version, as defined in `__init__`.
-- `evaluate`: pipeline and inference based on `evaluate.py`.
 - `query`: a general query, used for debugging.
 
 #### Run a demo UI

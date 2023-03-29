@@ -15,7 +15,6 @@
 # See: https://github.com/deepset-ai/haystack/blob/main/rest_api/controller/setup_pipeline.py
 
 from fastapi import APIRouter, FastAPI
-from hydra.utils import instantiate
 
 import fastrag
 
@@ -33,29 +32,3 @@ def status():
 @router.get("/version", status_code=200)
 def version():
     return {"fastRAG": fastrag.__version__}
-
-
-@router.get("/evaluate")
-def evaluate():
-    app: FastAPI = get_app()
-    cfg = app.cfg
-    pipeline_data = app.pipeline
-
-    # TODO: is the evaluator expensive or can we built
-    # it each time
-    evaluator = instantiate(cfg.evaluator)
-
-    logger.info(f"full pipeline: {pipeline_data['pipeline']}")
-    logger.info(
-        f"offline pipeline: {pipeline_data['offline']}, last_component: {pipeline_data['last']}"
-    )
-
-    evaluator.show_evaluation_report(
-        pipeline_data["pipeline"],
-        pipeline_data["offline"],
-        pipeline_data["dataset"],
-        last_component=pipeline_data["last"],
-    )
-
-    # TODO: pack results into JSON
-    return {"status": "Evaluation completed."}

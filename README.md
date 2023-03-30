@@ -99,6 +99,19 @@ flowchart LR
 </br>
 :notebook: [Efficient and fast ODQA with PLAID, ColBERT and FiD](examples/plaid_colbert_pipeline.ipynb)
 
+### ChatGPT Open Domain Reranking and QA
+
+Use ChatGPT API to both rerank the documents for any query, and provide an answer to the query using the chosen documents.
+
+```mermaid
+flowchart LR
+    id2(.. Retrieval pipeline ..) --> id4(ChatGPT)
+    style id2 fill:#DAE8FC,stroke:#6C8EBF
+    style id4 fill:#D5E8D4,stroke:#82B366
+```
+
+:notebook: [GPT as both Reranker and Reader](examples/gpt_as_both_reranker_and_reader.ipynb)
+
 ### Open Domain Summarization
 
 Summarize topics given free-text input and a corpus of knowledge.
@@ -145,6 +158,8 @@ flowchart LR
 ```
 
 :notebook: [Answer Image Generation](examples/answer_image_generation.ipynb)
+
+
 
 
 ## :running: How to Use

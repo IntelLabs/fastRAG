@@ -35,7 +35,6 @@ class ColBERTRetriever(BaseRetriever):
     def retrieve(
         self, query: str, top_k: Optional[int] = None, filters=None, **kwargs
     ) -> List[Document]:
-
         if filters:
             logger.info(f"Filters are not implemented for ColBERT/PLAID.")
 
@@ -54,7 +53,6 @@ class ColBERTRetriever(BaseRetriever):
         filters=None,
         **kwargs,
     ) -> List[List[Document]]:
-
         if filters:
             logger.info(f"Filters are not implemented for ColBERT/PLAID.")
 

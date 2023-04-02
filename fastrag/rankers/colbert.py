@@ -21,7 +21,6 @@ class ColBERTRanker(BaseRanker):
         use_gpu: bool = False,
         devices: Optional[List[Union[int, str, torch.device]]] = None,
     ):
-
         self.top_k = top_k
 
         if devices is not None:
@@ -83,7 +82,6 @@ class ColBERTRanker(BaseRanker):
         top_k: Optional[int] = None,
         batch_size: Optional[int] = None,
     ) -> List[List[Document]]:
-
         if top_k is None:
             top_k = self.top_k
 

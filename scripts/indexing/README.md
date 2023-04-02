@@ -19,13 +19,24 @@ For creating a FAISS-based dense index with DPR as an embedder/retriver, the fol
 
 ```sh
 python scripts/indexing/create_faiss.py \
-    --store config/store/faiss-haystack.yaml \
+    --store config/store/faiss.yaml \
     --data config/data/wikipedia_w100_hfdataset.yaml \
-    --embedder config/data/retriever/dpr.yaml \
+    --embedder config/retriever/dpr.yaml \
     --index-save-path <save path>
 ```
 
-**3. PLAID**:
+**3. Qdrant**:
+
+For creating a [Qdrant](https://qdrant.tech/)-based dense index with DPR as an embedder/retriver, the following script can be used:
+
+```sh
+python scripts/indexing/create_qdrant.py \
+    --store config/store/qdrant.yaml \
+    --data config/data/wikipedia_w100_hfdataset.yaml \
+    --embedder config/embedder/dpr.yaml
+```
+
+**4. PLAID**:
 
 PLAID (Based on [this](https://doi.org/10.48550/arXiv.2205.09707) paper) is a dense retrieval index engine that stores token vectors using an efficient algorithm. PLAID must be used with dense token embedder such as ColBERT which can embed tokens and utlizes a token-to-token ranking similarity method for ranking documents.
 More info on PLAID can be found in our [models](../../models) page.

@@ -72,7 +72,6 @@ def set_state_if_absent(key, value):
 
 
 def main():
-
     st.set_page_config(
         page_title="fastRAG Demo", page_icon="https://haystack.deepset.ai/img/HaystackIcon.png"
     )
@@ -281,7 +280,6 @@ This is a demo of a generative Summarization pipeline, using the fastRAG package
                 return
 
     if st.session_state.images:
-
         image_markdown = ""
         for image_data_index, image_data in enumerate(st.session_state.images):
             image_content = image_data["image_content"]
@@ -302,7 +300,6 @@ This is a demo of a generative Summarization pipeline, using the fastRAG package
         display_runtime_plot(st.session_state.raw_json)
 
     if st.session_state.results:
-
         st.write("## Summary:")
 
         for count, result in enumerate(st.session_state.results):

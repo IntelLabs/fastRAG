@@ -64,7 +64,6 @@ def set_state_if_absent(key, value):
 
 
 def main():
-
     st.set_page_config(page_title="fastRAG Demo", page_icon="")
 
     with open("fastrag/ui/style.css", "r") as f:
@@ -241,7 +240,6 @@ This is a demo of a generative Q&A pipeline, using the fastRAG package.
         components.html(source_code, height=700, width=700)
 
     if st.session_state.images:
-
         image_markdown = ""
         for image_data_index, image_data in enumerate(st.session_state.images):
             image_content = image_data["image_content"]

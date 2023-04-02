@@ -147,6 +147,7 @@ class ColBERT(BaseColBERT):
 
 # TODO: In Query/DocTokenizer, use colbert.raw_tokenizer
 
+
 # TODO: The masking below might also be applicable in the kNN part
 def colbert_score_reduce(scores_padded, D_mask, config: ColBERTConfig):
     D_padding = ~D_mask.view(scores_padded.size(0), scores_padded.size(1)).bool()

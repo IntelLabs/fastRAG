@@ -46,7 +46,6 @@ class PLAIDDocumentStore(BaseDocumentStore):
         query_maxlen=60,
         kmeans_niters=4,
     ):
-
         super().__init__()
         self.index_path = index_path
         self.checkpoint_path = checkpoint_path

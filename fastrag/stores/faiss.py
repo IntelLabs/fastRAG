@@ -32,7 +32,6 @@ class FastRAGFAISSStore(FAISSDocumentStore):
         ef_construction: int = 80,
         validate_index_sync: bool = True,
     ):
-
         if faiss_index_path is None:
             try:
                 file_path = sql_url.split("sqlite:///")[1]

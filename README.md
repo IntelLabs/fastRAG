@@ -45,6 +45,7 @@ There are various dependencies, based on usage:
 # Additional engines/components
 pip install .[faiss-cpu]           # CPU-based Faiss
 pip install .[faiss-gpu]           # GPU-based Faiss
+pip install .[qdrant]              # Qdrant support
 pip install libs/colbert           # ColBERT/PLAID indexing engine
 pip install .[image-generation]    # Stable diffusion library
 pip install .[knowledge_graph]     # spacy and KG libraries

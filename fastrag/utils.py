@@ -79,15 +79,11 @@ def missing_deps(classname: str, import_error: Exception):
 
 
 def init_logger(filename=None):
-    logger = logging.getLogger(__name__)
-    handlers = [logging.StreamHandler(sys.stdout)]
-    if filename is not None:
-        handlers.append(logging.FileHandler(filename=filename))
+    logger = logging.getLogger(filename or __name__)
     logging.basicConfig(
         datefmt="%m/%d/%Y %H:%M:%S",
         level=logging.INFO,
         format="[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s",
-        handlers=handlers,
     )
     return logger
 

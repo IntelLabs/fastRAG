@@ -4,7 +4,7 @@ from haystack.pipelines import Pipeline
 from fastrag import image_generators, kg_creators, rankers, readers, retrievers, stores
 from fastrag.utils import add_timing_to_pipeline
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 
 def load_pipeline(config_path: str) -> Pipeline:

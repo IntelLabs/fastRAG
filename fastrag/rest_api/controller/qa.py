@@ -16,17 +16,14 @@
 
 import collections
 import json
-import logging
 import time
 from typing import Any, Dict
 
-import haystack
 from fastapi import APIRouter, FastAPI
-from haystack import Pipeline
-from haystack.schema import Document
+from haystack.nodes import PromptNode, PromptTemplate
+from haystack.schema import Answer, Document
 from pydantic import BaseConfig
 
-from ..config import LOG_LEVEL
 from ..schema import QueryRequest, QueryResponse
 
 BaseConfig.arbitrary_types_allowed = True
@@ -65,6 +62,37 @@ def _process_request(pipeline, request) -> Dict[str, Any]:
         if isinstance(params[key], collections.Mapping) and "filters" in params[key].keys():
             params[key]["filters"] = _format_filters(params[key]["filters"])
 
+    if "generation_kwargs" in params:
+        for n in pipeline.components.values():
+            if isinstance(n, PromptNode):
+                params.update(
+                    {
+                        n.name: {
+                            "invocation_context": {"generation_kwargs": params["generation_kwargs"]}
+                        }
+                    }
+                )
+        del params["generation_kwargs"]
+
+    if "input_prompt" in params:
+        new_prompt = PromptTemplate(**params["input_prompt"])
+
+        for n in pipeline.components.values():
+            if isinstance(n, PromptNode):
+                template_names = n.get_prompt_template_names()
+                if new_prompt.name in template_names:
+                    del n.prompt_templates[new_prompt.name]
+                n.add_prompt_template(new_prompt)
+                n.set_default_prompt_template(new_prompt)
+        del params["input_prompt"]
+
+    pipeline_components_list = list(pipeline.components.keys())
+    for p in list(params.keys()):
+        if "filters" == str(p):
+            continue
+        if str(p) not in pipeline_components_list:
+            del params[p]
+
     result = pipeline.run(query=request.query, params=params, debug=request.debug)
 
     # Ensure answers and documents exist, even if they're empty lists
@@ -72,6 +100,8 @@ def _process_request(pipeline, request) -> Dict[str, Any]:
         result["documents"] = []
     if "answers" not in result:
         result["answers"] = []
+    if "results" in result:
+        result["answers"] = [Answer(res, "generative") for res in result["results"]]
 
     logger.info(
         json.dumps(

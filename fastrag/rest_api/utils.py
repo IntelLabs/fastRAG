@@ -19,10 +19,11 @@ import logging
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.openapi.utils import get_openapi
 from fastapi.routing import APIRoute
-from haystack import __version__ as haystack_version
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+
+from fastrag import __version__ as fastrag_version
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +45,9 @@ def get_app() -> FastAPI:
     from .config import ROOT_PATH
 
     app = FastAPI(
-        title="Haystack REST API",
+        title="fasrRAG REST API",
         debug=True,
-        version=haystack_version,
+        version=fastrag_version,
         root_path=ROOT_PATH,
     )
 
@@ -79,19 +80,3 @@ def get_app() -> FastAPI:
             route.operation_id = route.name
 
     return app
-
-
-def get_openapi_specs() -> dict:
-    """
-    Used to autogenerate OpenAPI specs file to use in the documentation.
-
-    See `docs/_src/api/openapi/generate_openapi_specs.py`
-    """
-    app = get_app()
-    return get_openapi(
-        title=app.title,
-        version=app.version,
-        openapi_version=app.openapi_version,
-        description=app.description,
-        routes=app.routes,
-    )

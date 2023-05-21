@@ -42,6 +42,14 @@ Hub](https://huggingface.co/Intel/ColBERT-NQ) for more details.
 of all the documents. Index can be created by the user given a collection and a checkpoint, or can be specified via a
 path.
 
+> :warning: PLAID Requirements :warning:
+>
+> If GPU is needed it should be of type RTX 3090 or newer and PyTorch should be installed with CUDA support using:
+>
+>```bash
+>pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
+>```
+
 
 ## Fusion-In-Decoder
 <image align="right" src="assets/fid.png" width="500">

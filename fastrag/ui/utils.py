@@ -56,6 +56,7 @@ def query(
     diff_steps=None,
     full_pipeline=True,
     pipeline_params_dict=None,
+    debug=False,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, str]]:
     """
     Send a query to the REST API and parse the answer.
@@ -79,7 +80,7 @@ def query(
 
         if pipeline_params_dict:
             update_params(params, pipeline_params_dict)
-        req = {"query": query, "params": params}
+        req = {"query": query, "params": params, "debug": debug}
     else:  # reader only
         url = f"{API_ENDPOINT}/{READER_REQUEST}"
         params = {
@@ -102,7 +103,6 @@ def query(
 
     # Format response
     results = []
-
     answers = response["answers"]
     for answer in answers:
         if type(answer) == list:
@@ -111,15 +111,8 @@ def query(
         if answer.get("answer", None):
             results.append(
                 {
-                    # "context": "..." + answer["context"] + "...",
                     "answer": answer.get("answer", None),
-                    # "source": answer["meta"]["name"],
-                    # "relevance": round(answer["score"] * 100, 2),
-                    "document": answer["meta"]["content"],
-                    # "document": [
-                    #     doc for doc in response["documents"] if doc["id"] == answer["document_id"]
-                    # ][0],
-                    # "offset_start_in_doc": answer["offsets_in_document"][0]["start"],
+                    "document": response["documents"],
                     "_raw": answer,
                 }
             )

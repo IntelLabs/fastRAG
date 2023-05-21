@@ -79,9 +79,10 @@ class CreateLabelSerialized(RequestBaseModel):
 
 class QueryResponse(BaseModel):
     query: str
-    answers: List[Answer] = []
+    answers: Optional[List] = []
     documents: List[Document] = []
     images: Optional[Dict] = None
     relations: Optional[List] = None
     debug: Optional[Dict] = Field(None, alias="_debug")
     timings: Optional[Dict] = None
+    results: Optional[List] = None

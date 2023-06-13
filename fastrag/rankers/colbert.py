@@ -29,6 +29,7 @@ class ColBERTRanker(BaseRanker):
             self.devices, _ = initialize_device_settings(use_cuda=use_gpu, multi_gpu=True)
 
         self.config = ColBERTConfig(
+            checkpoint=checkpoint_path,
             ncells=2,
             nbits=2,
             query_maxlen=query_maxlen,

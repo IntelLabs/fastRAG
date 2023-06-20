@@ -31,8 +31,8 @@ class Searcher:
             self.checkpoint_config, self.index_config, initial_config
         )
 
-        # self.collection = Collection.cast(collection or self.config.collection)
-        self.configure(checkpoint=self.checkpoint)
+        self.collection = Collection.cast(collection or self.config.collection)
+        self.configure(checkpoint=self.checkpoint, collection=self.collection)
 
         self.checkpoint = Checkpoint(self.checkpoint, colbert_config=self.config)
         use_gpu = self.config.total_visible_gpus > 0

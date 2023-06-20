@@ -20,6 +20,7 @@ fast**RAG** is a research framework designed to facilitate the building of retri
 
 ## Updates
 
+- **June 2023**: ColBERT index modification: adding/removing documents; see [IndexUpdater](libs/colbert/colbert/index_updater.py).
 - **May 2023**: [RAG with LLM and dynamic prompt synthesis example](examples/rag-prompt-hf.ipynb).
 - **April 2023**: Qdrant `DocumentStore` support.
 

@@ -42,9 +42,23 @@ Hub](https://huggingface.co/Intel/ColBERT-NQ) for more details.
 of all the documents. Index can be created by the user given a collection and a checkpoint, or can be specified via a
 path.
 
-> :warning: PLAID Requirements :warning:
+**Updated:** new feature that enables adding and removing documents from a given index. Example usage:
+
+```python
+index_updater = IndexUpdater(config, searcher, checkpoint)
+
+added_pids = index_updater.add(passages)  # Adding passages
+index_updater.remove(pids)                # Removing passages
+searcher.search()                         # Search now reflects the added & removed passages
+
+index_updater.persist_to_disk()           # Persist changes to disk
+```
+
+---
+
+#### :warning: PLAID Requirements :warning:
 >
-> If GPU is needed it should be of type RTX 3090 or newer and PyTorch should be installed with CUDA support using:
+> If GPU is needed it should be of type RTX 3090 or newer (Ampere) and PyTorch should be installed with CUDA support using:
 >
 >```bash
 >pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116

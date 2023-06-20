@@ -176,8 +176,7 @@ def load_collection(collection_path):
                 print(f"{line_idx // 1000 // 1000}M", end=" ", flush=True)
 
             pid, passage, *rest = line.strip("\n\r ").split("\t")
-            # id could be either "id" (the first line), a number or have the format "docNUM"
-            assert pid == "id" or int(pid if pid.isnumeric() else pid[3:]) == line_idx
+            assert pid == "id" or int(pid) == line_idx, f"pid={pid}, line_idx={line_idx}"
 
             if len(rest) >= 1:
                 title = rest[0]

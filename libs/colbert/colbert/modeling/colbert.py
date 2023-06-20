@@ -103,7 +103,6 @@ class ColBERT(BaseColBERT):
         input_ids, attention_mask = input_ids.to(self.device), attention_mask.to(self.device)
         D = self.bert(input_ids, attention_mask=attention_mask)[0]
         D = self.linear(D)
-
         mask = (
             torch.tensor(self.mask(input_ids, skiplist=self.skiplist), device=self.device)
             .unsqueeze(2)
@@ -126,7 +125,6 @@ class ColBERT(BaseColBERT):
 
     def score(self, Q, D_padded, D_mask):
         # assert self.colbert_config.similarity == 'cosine'
-
         if self.colbert_config.similarity == "l2":
             assert self.colbert_config.interaction == "colbert"
             return (
@@ -134,7 +132,6 @@ class ColBERT(BaseColBERT):
                 .max(-1)
                 .values.sum(-1)
             )
-
         return colbert_score(Q, D_padded, D_mask, config=self.colbert_config)
 
     def mask(self, input_ids, skiplist):

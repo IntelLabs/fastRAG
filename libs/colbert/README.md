@@ -1,3 +1,8 @@
+## 🚨 **Announcements**
+
+* (1/29/23) We have merged a new index updater feature and support for additional Hugging Face models! These are in beta so please give us feedback as you try them out.
+* (1/24/23) If you're looking for the **DSP** framework for composing ColBERTv2 and LLMs, it's at: https://github.com/stanfordnlp/dsp
+
 # ColBERT (v2)
 
 ### ColBERT is a _fast_ and _accurate_ retrieval model, enabling scalable BERT-based search over large text collections in tens of milliseconds.
@@ -18,7 +23,7 @@ These rich interactions allow ColBERT to surpass the quality of _single-vector_ 
 * [**Relevance-guided Supervision for OpenQA with ColBERT**](https://arxiv.org/abs/2007.00814) (TACL'21).
 * [**Baleen: Robust Multi-Hop Reasoning at Scale via Condensed Retrieval**](https://arxiv.org/abs/2101.00436) (NeurIPS'21).
 * [**ColBERTv2: Effective and Efficient Retrieval via Lightweight Late Interaction**](https://arxiv.org/abs/2112.01488) (NAACL'22).
-* [**PLAID: An Efficient Engine for Late Interaction Retrieval**](https://arxiv.org/abs/2205.09707) (preprint).
+* [**PLAID: An Efficient Engine for Late Interaction Retrieval**](https://arxiv.org/abs/2205.09707) (CIKM'22).
 
 ----
 
@@ -29,7 +34,7 @@ The ColBERTv1 code from the SIGIR'20 paper is in the [`colbertv1` branch](https:
 
 ## Installation
 
-ColBERT requires Python 3.7+ and Pytorch 1.9+ and uses the [HuggingFace Transformers](https://github.com/huggingface/transformers) library.
+ColBERT requires Python 3.7+ and Pytorch 1.9+ and uses the [Hugging Face Transformers](https://github.com/huggingface/transformers) library.
 
 We strongly recommend creating a conda environment using the commands below. (If you don't have conda, follow the official [conda installation guide](https://docs.anaconda.com/anaconda/install/linux/#installation).)
 
@@ -159,6 +164,19 @@ if __name__=='__main__':
         checkpoint_path = trainer.train()
 
         print(f"Saved checkpoint to {checkpoint_path}...")
+```
+
+## Running a lightweight ColBERTv2 server
+We provide a script to run a lightweight server which serves k (upto 100) results in ranked order for a given search query, in JSON format. This script can be used to power DSP programs.
+
+To run the server, update the environment variables `INDEX_ROOT` and `INDEX_NAME` in the `.env` file to point to the appropriate ColBERT index. The run the following command:
+```
+python server.py
+```
+
+A sample query:
+```
+http://localhost:8893/api/search?query=Who won the 2022 FIFA world cup&k=25
 ```
 
 ## Branches

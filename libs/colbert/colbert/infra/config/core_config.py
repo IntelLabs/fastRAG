@@ -14,6 +14,12 @@ from colbert.utils.utils import timestamp, torch_load_dnn
 class DefaultVal:
     val: Any
 
+    def __hash__(self):
+        return hash(repr(self.val))
+
+    def __eq__(self, other):
+        self.val == other.val
+
 
 @dataclass
 class CoreConfig:

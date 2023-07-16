@@ -1,0 +1,57 @@
+components:
+- name: InMemoryDocumentStore
+  params:
+    use_bm25: true
+  type: InMemoryDocumentStore
+- name: Retriever
+  params:
+    document_store: InMemoryDocumentStore
+  type: BM25Retriever
+- name: Reranker
+  params:
+    batch_size: 32
+    model_name_or_path: cross-encoder/ms-marco-MiniLM-L-6-v2
+    use_gpu: false
+  type: SentenceTransformersRanker
+- name: PromptModel
+  params:
+    model_kwargs:
+      device_map: {"": 6}
+      load_in_8bit: true
+      model_max_length: 100000
+    model_name_or_path: declare-lab/flan-sharegpt-xl
+    use_gpu: true
+  type: PromptModel
+- name: AnswerParser
+  params: {}
+  type: AnswerParser
+- name: lfqa
+  params:
+    name: lfqa
+    output_parser: AnswerParser
+    prompt_text: "Below is an instruction that describes a task, paired with an input\
+      \ that provides further context. Write a response that appropriately completes\
+      \ the request.\n\n### Instruction:\nYou are a medical doctor, giving medical\
+      \ advice to patients. \nGive a diagnosis to the patient that asked the Question\
+      \ below.\nUse only the information provided in the Input to respond.\nDo not\
+      \ use any prior knowledge to respond.\n\n### Input:\n{join(documents)}\n\nQuestion:\
+      \ {query}\n\n### Response:"
+  type: PromptTemplate
+- name: Prompter
+  params:
+    default_prompt_template: lfqa
+    model_name_or_path: PromptModel
+  type: PromptNode
+pipelines:
+- name: query
+  nodes:
+  - inputs:
+    - Query
+    name: Retriever
+  - inputs:
+    - Retriever
+    name: Reranker
+  - inputs:
+    - Reranker
+    name: Prompter
+version: 1.17.2

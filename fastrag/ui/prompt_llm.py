@@ -24,6 +24,15 @@ from markdown import markdown
 from fastrag.ui.utils import API_ENDPOINT, display_runtime_plot, haystack_is_ready, query
 
 DEFAULT_PROMPT = """Answer the question using the provided context. Your answer should be in your own words and be no longer than 50 words. \n\n Context: {join(documents)} \n\n Question: {query} \n\n Answer:"""
+pipeline_path = os.getenv("PIPELINE_PATH", None)
+
+if(pipeline_path is not None):
+    import yaml
+
+    with open(pipeline_path, "r") as stream:
+        pipeline_file = yaml.safe_load(stream)
+    prompt_template_components = [x for x in pipeline_file['components'] if x['type'] == "PromptTemplate"]
+    DEFAULT_PROMPT = prompt_template_components[0]['params']['prompt_text']
 
 
 def set_state_if_absent(key, value):
@@ -71,7 +80,7 @@ def main():
     st.sidebar.title("Options")
     top_k_retriever = st.sidebar.number_input(
         "Documents to retrieve from the index",
-        value=5,
+        value=50,
         min_value=1,
         max_value=100,
         step=1,
@@ -79,7 +88,7 @@ def main():
     )
     top_k_reranker = st.sidebar.number_input(
         "Documents document to re-rank",
-        value=5,
+        value=3,
         min_value=1,
         max_value=50,
         step=1,
@@ -96,9 +105,9 @@ def main():
 
     max_new_tokens = st.sidebar.number_input(
         "Max new tokens",
-        value=50,
+        value=1000,
         min_value=1,
-        max_value=500,
+        max_value=10000,
         step=1,
         # on_change=reset_results
     )
@@ -281,8 +290,9 @@ def main():
                 st.write("___")
                 st.write("#### Supporting documents")
                 for doc_i, doc in enumerate(retrieved_docs):
+                    doc_prefix = doc['meta'].get('title', f"Document {doc_i+1}")
                     st.write(
-                        f"**{doc['meta'].get('title')}:** {clean_markdown(doc.get('content'))}"
+                        f"**{doc_prefix}:** {clean_markdown(doc.get('content'))}"
                     )
             else:
                 st.info(

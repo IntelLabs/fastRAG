@@ -75,6 +75,28 @@ We provide an implementation of FiD, using the class `FiDReader` and
 
 To finetune your own an FiD model, you can use our training script here: [Training FiD](scripts/training/train_fid.py)
 
+The data used for training and evaluation is a .json file (**not** .jsonl), containing json dictionaries as entries. Each entry adheres to the following format:
+
+```json
+{
+  "id": 0,
+  "question": "The question for the current example",
+  "target": "Target answer",
+  "answers": ["Target answer", "Possible answer #1", "Possible answer #2"],
+  "ctxs": [
+            {
+                "title": "Title of passage #1",
+                "text": "Context of passage #1"
+            },
+            {
+                "title": "Title of passage #2",
+                "text": "Context of passage #2"
+            },
+            ...
+          ]
+}
+```
+
 The following is an example command, with the standard parameters for training the FiD model:
 
 ```

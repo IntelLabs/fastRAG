@@ -23,7 +23,7 @@ class T5Reader(Seq2SeqGenerator):
         use_auth_token: Optional[Union[str, bool]] = None,
         devices: Optional[List[Union[str, torch.device]]] = None,
         input_converter_tokenizer_max_len: int = 256,
-        input_converter_mode: str = "Q&A",
+        input_converter_mode: str = "qa",
     ):
         super().__init__(
             model_name_or_path=model_name_or_path,

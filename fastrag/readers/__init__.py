@@ -3,8 +3,11 @@ from typing import List, Optional, Union
 from haystack.nodes import BaseGenerator, BaseReader
 from haystack.schema import Document, MultiLabel
 
-from fastrag.readers.FiD import FiDReader
-from fastrag.readers.T5 import T5Reader
+# Currently removing these classes due to incompatibility with the Seq2SeqGenerator
+# Future versions will fix this discrepancy
+
+# from fastrag.readers.FiD import FiDReader
+# from fastrag.readers.T5 import T5Reader
 from fastrag.utils import fastrag_timing
 
 BaseReader.timing = fastrag_timing

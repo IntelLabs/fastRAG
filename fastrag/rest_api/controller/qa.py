@@ -59,7 +59,7 @@ def _process_request(pipeline, request) -> Dict[str, Any]:
 
     # format targeted node filters (e.g. "params": {"Retriever": {"filters": {"value"}}})
     for key in params.keys():
-        if isinstance(params[key], collections.Mapping) and "filters" in params[key].keys():
+        if isinstance(params[key], collections.abc.Mapping) and "filters" in params[key].keys():
             params[key]["filters"] = _format_filters(params[key]["filters"])
 
     if "generation_kwargs" in params:
@@ -79,11 +79,7 @@ def _process_request(pipeline, request) -> Dict[str, Any]:
 
         for n in pipeline.components.values():
             if isinstance(n, PromptNode):
-                template_names = n.get_prompt_template_names()
-                if new_prompt.name in template_names:
-                    del n.prompt_templates[new_prompt.name]
-                n.add_prompt_template(new_prompt)
-                n.set_default_prompt_template(new_prompt)
+                n.default_prompt_template = new_prompt
         del params["input_prompt"]
 
     pipeline_components_list = list(pipeline.components.keys())

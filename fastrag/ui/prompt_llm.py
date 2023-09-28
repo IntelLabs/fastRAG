@@ -32,7 +32,7 @@ if(pipeline_path is not None):
     with open(pipeline_path, "r") as stream:
         pipeline_file = yaml.safe_load(stream)
     prompt_template_components = [x for x in pipeline_file['components'] if x['type'] == "PromptTemplate"]
-    DEFAULT_PROMPT = prompt_template_components[0]['params']['prompt_text']
+    DEFAULT_PROMPT = prompt_template_components[0]['params']['prompt']
 
 
 def set_state_if_absent(key, value):
@@ -209,7 +209,7 @@ def main():
         st.session_state.question = question
 
         pipeline_params_dict = {
-            "input_prompt": {"prompt_text": prompt_template, "name": "fastrag-prompt"},
+            "input_prompt": {"prompt": prompt_template},
             "generation_kwargs": {
                 "min_new_tokens": int(min_new_tokens),
                 "max_new_tokens": int(max_new_tokens),

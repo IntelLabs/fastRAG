@@ -24,16 +24,6 @@ from markdown import markdown
 from fastrag.ui.utils import API_ENDPOINT, display_runtime_plot, haystack_is_ready, query
 
 DEFAULT_PROMPT = """Answer the question using the provided context. Your answer should be in your own words and be no longer than 50 words. \n\n Context: {join(documents)} \n\n Question: {query} \n\n Answer:"""
-pipeline_path = os.getenv("PIPELINE_PATH", None)
-
-if(pipeline_path is not None):
-    import yaml
-
-    with open(pipeline_path, "r") as stream:
-        pipeline_file = yaml.safe_load(stream)
-    prompt_template_components = [x for x in pipeline_file['components'] if x['type'] == "PromptTemplate"]
-    DEFAULT_PROMPT = prompt_template_components[0]['params']['prompt']
-
 
 def set_state_if_absent(key, value):
     if key not in st.session_state:

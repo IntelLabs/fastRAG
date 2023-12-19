@@ -20,7 +20,6 @@ import fastrag
 
 from ..utils import get_app
 
-logger = fastrag.utils.init_logger(__name__)
 router = APIRouter()
 
 

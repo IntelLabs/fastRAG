@@ -14,8 +14,6 @@
 # This file is based on https://github.com/deepset-ai/haystack
 # See: https://github.com/deepset-ai/haystack/blob/main/rest_api/utils.py
 
-import logging
-
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.openapi.utils import get_openapi
 from fastapi.routing import APIRoute
@@ -24,8 +22,6 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from fastrag import __version__ as fastrag_version
-
-logger = logging.getLogger(__name__)
 
 app = None
 

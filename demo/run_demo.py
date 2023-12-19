@@ -6,7 +6,6 @@ import time
 TASKS = {
     "QA1": "qa_pipeline.yaml",
     "QA2": "qa_plaid.yaml",
-    "QADIFF": "qa_diffusion_pipeline.yaml",
     "SUMR": "summarization_pipeline.yaml",
     "LLM": "rag_generation_with_dynamic_prompt.yaml",
 }
@@ -14,7 +13,6 @@ TASKS = {
 SCREENS = {
     "QA1": "webapp",
     "QA2": "webapp",
-    "QADIFF": "webapp",
     "SUMR": "webapp_summarization",
     "LLM": "prompt_llm",
 }

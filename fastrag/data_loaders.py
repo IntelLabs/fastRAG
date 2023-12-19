@@ -1,9 +1,7 @@
 import ast
 import hashlib
-import json
 import math
 from abc import abstractmethod
-from argparse import Namespace
 from typing import Dict, List
 
 import pandas as pd
@@ -11,7 +9,7 @@ from datasets import load_dataset
 from haystack.schema import Document
 from tqdm import tqdm
 
-from fastrag.utils import AnswerGroundType, get_has_answer_data, remove_html_from_text
+from fastrag.utils import AnswerGroundType, remove_html_from_text
 
 try:
     import nltk
@@ -59,6 +57,20 @@ def squad_odqa_encoder(doc) -> Dict:
 def wikipedia_hf_encoder(doc) -> Document:
     """encoder for wikipedia dataset from HF datasets"""
     return Document(content=doc["text"], id=doc["docid"], meta={"title": doc["title"]})
+
+
+def pubmedQA_hf_encoder(doc) -> Document:
+    """encoder for pubmedQA dataset from HF datasets
+
+    Splits the original passage into subpassages 5 sentences each.
+    """
+    sentences = nltk_tokenizer.tokenize(doc["context"])
+    joined_passages = sentences_to_passages(sentences, sentences_per_passage=5)
+
+    return [
+        Document(content=s, id=f"{str(doc['document_id'])}_{s_idx}")
+        for s_idx, s in enumerate(joined_passages)
+    ]
 
 
 def hf_id_title_text(doc) -> Document:
@@ -110,6 +122,7 @@ encoding_methods = {
     "tqa_decoder": wiki_odqa_tasks_encoder,
     "wikipedia_hf": wikipedia_hf_encoder,
     "wikipedia_hf_multisentence": wikipedia_hf_multisentence_encoder,
+    "pubmedqa_hf": pubmedQA_hf_encoder,
     "hf_id_title_text": hf_id_title_text,
     "hf_id_title_text_concat": hf_id_title_text_concat,
 }
@@ -135,15 +148,22 @@ class HFDatasetLoader(BaseParser):
             list(range(self.chunks)),
             desc="Data chunks",
         ):
-            end_size = min((i + 1) * self.batch_size, self.length)
-            docs = []
-            for j in range(i * self.batch_size, end_size):
-                encoding_results = self.encode_fn(self.data[j])
-                if type(encoding_results) == list:
-                    docs.extend(encoding_results)
-                else:
-                    docs.append(encoding_results)
+            docs = self.process(i)
             yield docs
+
+    def process(self, i):
+        """Given a batch number i, returns the processed batch.
+        Useful for restarting a job from the ith batch."""
+
+        end_size = min((i + 1) * self.batch_size, self.length)
+        docs = []
+        for j in range(i * self.batch_size, end_size):
+            encoding_results = self.encode_fn(self.data[j])
+            if type(encoding_results) == list:
+                docs.extend(encoding_results)
+            else:
+                docs.append(encoding_results)
+        return docs
 
 
 def encode_stackoverflow(row, fields_to_construct_from, id_field):
@@ -176,6 +196,10 @@ def encode_wikipedia_text_and_title(row):
 
 def encode_wikipedia_title_only(row):
     return Document(content=str(row["title"]), id=str(row["id"]))
+
+
+def encode_wikipedia_json(row):
+    return Document(content=row["text"], id=str(row["id"]), meta={"title": row["title"]})
 
 
 def encode_stackoverflow_answer(row):
@@ -215,6 +239,7 @@ row_parser_functions = {
     "stackoverflow_body_answer": encode_stackoverflow_body_answer,
     "stackoverflow_body": encode_stackoverflow_body,
     "evaluation_question_content": encode_evaluation_question_content,
+    "wikipedia_local_json": encode_wikipedia_json,
 }
 
 
@@ -240,6 +265,34 @@ class CSVFileLoader(BaseParser):
                 filepath_or_buffer=self.filepath,
                 chunksize=self.batch_size,
                 delimiter=self.delimiter,
+            ),
+            total=self.iterations_count,
+            desc="Document chunks",
+        ):
+            docs = [self.encode_fn(row) for _, row in df.iterrows()]
+            yield docs
+
+
+class JSONFileLoader(BaseParser):
+    def __init__(
+        self,
+        filepath,
+        encoding_method,
+        batch_size=1,
+    ):
+        super().__init__(batch_size)
+
+        self.filepath = filepath
+        self.file_length = _get_file_length(self.filepath)
+        self.iterations_count = math.ceil(self.file_length / self.batch_size)
+        self.encode_fn = row_parser_functions[encoding_method]
+
+    def __iter__(self):
+        for df in tqdm(
+            pd.read_json(
+                self.filepath,
+                chunksize=self.batch_size,
+                lines=self.filepath.endswith("jsonl"),
             ),
             total=self.iterations_count,
             desc="Document chunks",

@@ -14,12 +14,12 @@
 # This file is based on https://github.com/deepset-ai/haystack
 # See: https://github.com/deepset-ai/haystack/blob/main/ui/webapp.py
 import logging
-import os
 from json import JSONDecodeError
 
 import streamlit as st
 from annotated_text import annotated_text
 from markdown import markdown
+from streamlit_chat import message
 
 from fastrag.ui.utils import API_ENDPOINT, display_runtime_plot, haystack_is_ready, query
 
@@ -200,7 +200,7 @@ def main():
         st.session_state.question = question
 
         pipeline_params_dict = {
-            "input_prompt": {"prompt_text": prompt_template, "name": "fastrag-prompt"},
+            "input_prompt": {"prompt": prompt_template},
             "generation_kwargs": {
                 "min_new_tokens": int(min_new_tokens),
                 "max_new_tokens": int(max_new_tokens),
@@ -282,7 +282,7 @@ def main():
                 st.write("#### Supporting documents")
                 for doc_i, doc in enumerate(retrieved_docs):
                     st.write(
-                        f"**{doc['meta'].get('title')}:** {clean_markdown(doc.get('content'))}"
+                        f"**{doc['meta'].get('title', f'Document {doc_i + 1}')}:** {clean_markdown(doc.get('content'))}"
                     )
             else:
                 st.info(

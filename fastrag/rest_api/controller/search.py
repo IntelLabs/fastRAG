@@ -30,8 +30,7 @@ from utils import get_app, get_pipelines
 
 from config import LOG_LEVEL
 
-logging.getLogger("haystack").setLevel(LOG_LEVEL)
-logger = logging.getLogger("haystack")
+logger = logging.getLogger(__name__)
 
 
 BaseConfig.arbitrary_types_allowed = True

@@ -1,7 +1,8 @@
 from haystack.nodes import BaseRetriever
 
-from fastrag.utils import fastrag_timing, safe_import
+from fastrag.utils import fastrag_timing
 
 BaseRetriever.timing = fastrag_timing
 
-ColBERTRetriever = safe_import("fastrag.retrievers.colbert", "ColBERTRetriever")
+from fastrag.retrievers.colbert import ColBERTRetriever
+from fastrag.retrievers.optimized import QuantizedBiEncoderRetriever

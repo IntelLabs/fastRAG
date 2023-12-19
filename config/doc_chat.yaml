@@ -1,0 +1,8 @@
+chat_model:
+  model_kwargs:
+    device_map: {"": 0}
+    model_max_length: 4096
+    task_name: text-generation
+  model_name_or_path: meta-llama/Llama-2-7b-chat-hf
+  use_gpu: true
+doc_pipeline_file: "config/empty_retrieval_pipeline.yaml"

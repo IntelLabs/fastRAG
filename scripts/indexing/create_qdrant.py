@@ -2,9 +2,14 @@ import argparse
 import logging
 from pathlib import Path
 
+from haystack.lazy_imports import LazyImport
+
 from fastrag.utils import init_cls, init_haystack_cls, load_yaml
 
 logger = logging.getLogger(__name__)
+
+with LazyImport("Please install Qdrant client by: 'pip install qdrant-haystack'") as qdrant_import:
+    from qdrant_haystack import QdrantDocumentStore
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Create an index using Qdrant as a backend")
@@ -14,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, required=False)
 
     args = parser.parse_args()
+    qdrant_import.check()
 
     store_params = load_yaml(args.store)
     data_params = load_yaml(args.data)

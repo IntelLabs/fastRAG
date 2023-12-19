@@ -128,15 +128,6 @@ This is a demo of a generative Q&A pipeline, using the fastRAG package.
         on_change=reset_results,
     )
     diff_steps = None
-    if DEFAULT_TASK == "qa_diffusion_pipeline.yaml":
-        diff_steps = st.sidebar.slider(
-            "Number of steps for the diffusion model",
-            min_value=5,
-            max_value=100,
-            value=DEFAULT_NUMBER_OF_DIFF_STEPS,
-            step=1,
-            on_change=reset_results,
-        )
     show_runtime = st.sidebar.checkbox("Show components runtime")
     debug = st.sidebar.checkbox("Show debug info")
 

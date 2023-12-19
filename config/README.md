@@ -9,14 +9,11 @@ There are several ready-to-run full pipelines. They are compatible with the hays
 
 - `qa_pipeline` - Elasticsearch retriever, SBERT cross encoder reranker and an FiD reader.
 - `qa_plaid`- ColBERT/PLAID retriever and an FiD reader.
-- `summarization_pipeline_long_t5` - Elasticsearch retriever, SBERT cross encoder reranker and a large input LongT5 reader.
-- `summarization_pipeline_flan_t5` - Elasticsearch retriever, SBERT cross encoder reranker and an instruction tuned FLAN-T5 reader.
-- `qa_diffusion_pipeline` - Elasticsearch retriever, SBERT cross encoder reranker, an FiD reader and a stable diffusion
-image generation reader.
+- `summarization_pipeline` - BM25 retriever, SBERT cross encoder reranker and an instruction tuned BART-LARGE reader.
 
 ## Components Configuration
 
-The following folders: `data`, `embedder`, `image_generator`, `reader`, `reranker`, `retriever` and `store` contain
+The following folders: `data`, `embedder`, `reader`, `reranker`, `retriever` and `store` contain
 components' configuration YAML files. Those can be adapted to use specific models by providing a local path or a
 HuggingFace hub's model name or dataset name. After components are chosen, one needs to run the [Pipeline
 Generation](../scripts/generate_pipeline.py) script in order to generate a pipeline configuration which describes the
@@ -27,7 +24,6 @@ python generate_pipeline.py --path "retriever,reranker,reader"  \
        --store config/store/elastic.yaml                        \
        --retriever config/retriever/bm25.yaml                   \
        --reranker config/reranker/sbert.yaml                    \
-       --reader config/reader/FiD.yaml                          \
        --file pipeline.yaml
 ```
 

@@ -1,0 +1,10 @@
+chat_model:
+  model_kwargs:
+    model_max_length: 4096
+    task_name: text-generation
+    session_config_entries:
+      session.intra_op_thread_affinities: '3,4;5,6;7,8;9,10;11,12'
+    intra_op_num_threads: 6
+  model_name_or_path: '/tmp/facebook_opt-iml-max-1.3b/quantized'
+  invocation_layer_class: fastrag.prompters.invocation_layers.ort.ORTInvocationLayer
+doc_pipeline_file: "config/empty_retrieval_pipeline.yaml"

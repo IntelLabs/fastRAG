@@ -1,62 +1,15 @@
 import copy
-from typing import List, Optional, Union
+import logging
+from typing import List
 
 import torch
 import torch.nn.functional as F
-import transformers
-from haystack.modeling.utils import initialize_device_settings
-from haystack.nodes import Seq2SeqGenerator
 from haystack.schema import Document
 from torch import nn
-from transformers import AutoTokenizer, BatchEncoding
+from transformers import BatchEncoding
 from transformers.models.t5.modeling_t5 import T5Config, T5ForConditionalGeneration, T5Stack
 
-import fastrag
-
-logger = fastrag.utils.init_logger(__name__)
-
-
-class FiDReader(Seq2SeqGenerator):
-    def __init__(
-        self,
-        model_name_or_path: str,
-        tokenizer_name_or_path: str = "t5-base",
-        input_converter_tokenizer_max_len: int = 256,
-        top_k: int = 1,
-        max_length: int = None,
-        min_length: int = None,
-        num_beams: int = 1,
-        use_gpu: bool = True,
-        progress_bar: bool = True,
-        use_auth_token: Optional[Union[str, bool]] = None,
-        devices: Optional[List[Union[str, torch.device]]] = None,
-    ):
-        self.progress_bar = progress_bar
-        self.model_name_or_path = model_name_or_path
-        self.max_length = max_length
-        self.min_length = min_length
-        self.num_beams = num_beams
-
-        self.top_k = top_k
-
-        self.devices, _ = initialize_device_settings(
-            devices=devices, use_cuda=use_gpu, multi_gpu=False
-        )
-        if len(self.devices) > 1:
-            logger.warning(
-                f"Multiple devices are not supported in {self.__class__.__name__} inference, "
-                f"using the first device {self.devices[0]}."
-            )
-
-        input_converter = FiDConverter(input_converter_tokenizer_max_len)
-        Seq2SeqGenerator._register_converters(model_name_or_path, input_converter)
-
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            tokenizer_name_or_path, use_auth_token=use_auth_token
-        )
-        self.model = FusionInDecoderForConditionalGeneration.from_pretrained(model_name_or_path)
-        self.model.to(str(self.devices[0]))
-        self.model.eval()
+logger = logging.getLogger(__name__)
 
 
 def get_padded_tensor(ten_list, value=0):

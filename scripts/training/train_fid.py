@@ -22,11 +22,14 @@ from transformers import (
 )
 from transformers.trainer_utils import set_seed
 
+from fastrag.readers.FiD import FusionInDecoderForConditionalGeneration, passages_to_tensors
+
 try:
     from kilt.eval_downstream import _exact_match_score
 except ImportError as ie:
-    raise ImportError("KILT was not found. Please install it via: pip install '.[benchmark]'")
-from fastrag.readers.FiD import FusionInDecoderForConditionalGeneration, passages_to_tensors
+    raise ImportError(
+        "KILT was not found and is essential for calculating EM. Please install it via: pip install '.[benchmark]'"
+    )
 
 
 @dataclass
@@ -67,6 +70,24 @@ class ModelArguments:
     )
 
 
+INPUT_FILE_DESCRIPTION = """The file is a .json file, comprised of a list of json objects.
+Each object follows this template:
+
+{
+    'id': 'Some id',
+    'question': 'Some question?',
+    'answers': ['Some answer...'],
+    'ctxs': [
+         {
+             'id': 'Some id',
+             'title': 'Some title',
+             'text': 'Some text..'
+         },
+    ]
+}
+"""
+
+
 @dataclass
 class DataTrainingArguments:
     """
@@ -84,18 +105,16 @@ class DataTrainingArguments:
         },
     )
     train_file: Optional[str] = field(
-        default=None, metadata={"help": "The input training data file (a text file)."}
+        default=None, metadata={"help": f"The input training data file. {INPUT_FILE_DESCRIPTION}"}
     )
     validation_file: Optional[str] = field(
         default=None,
-        metadata={
-            "help": "An optional input evaluation data file to evaluate the perplexity on (a text file)."
-        },
+        metadata={"help": f"The evaluation data. {INPUT_FILE_DESCRIPTION}"},
     )
     test_file: Optional[str] = field(
         default=None,
         metadata={
-            "help": "An optional input test data file to evaluate the perplexity on (a text file)."
+            "help": f"The test data for predicting on questions and creating a submission file. {INPUT_FILE_DESCRIPTION}"
         },
     )
     overwrite_cache: bool = field(
@@ -259,6 +278,9 @@ class FusionInDecoderDataset(Dataset):
         self.train = train
         self.train_with_random_answers = train_with_random_answers
 
+    def get_example(self, idx):
+        return self.examples[idx]
+
     def get_random_answer(self, answers):
         return random.choice(answers)
 
@@ -275,10 +297,13 @@ class FusionInDecoderDataset(Dataset):
 
         formatted_passages_with_question = [question + " " + t for t in formatted_passages]
 
-        if self.train_with_random_answers:
-            answer = self.get_random_answer(example["answers"])
+        if len(example["answers"]) > 0:
+            if self.train_with_random_answers:
+                answer = self.get_random_answer(example["answers"])
+            else:
+                answer = example["answers"][self.answer_index]
         else:
-            answer = example["answers"][self.answer_index]
+            answer = "No Answer"
 
         full_answer_list = example["answers"]
 
@@ -371,6 +396,7 @@ if __name__ == "__main__":
 
         train_dataset = raw_datasets["train"]
         eval_dataset = raw_datasets["validation"]
+        test_dataset = raw_datasets["test"]
 
         if data_args.max_train_samples is not None:
             # We will select sample from whole data
@@ -381,10 +407,17 @@ if __name__ == "__main__":
             # We will select sample from whole data
             max_eval_samples = min(len(eval_dataset), data_args.max_eval_samples)
             eval_dataset = eval_dataset.select(range(max_eval_samples))
+
+        if data_args.max_predict_samples is not None:
+            # We will select sample from whole data
+            max_predict_samples = min(len(test_dataset), data_args.max_predict_samples)
+            test_dataset = test_dataset.select(range(max_predict_samples))
     else:
         assert (
-            data_args.train_file is not None or data_args.validation_file is not None
-        ), "If a dataset was not specified, the train or dev files should be present."
+            data_args.train_file is not None
+            or data_args.validation_file is not None
+            or data_args.test_file is not None
+        ), "If a dataset was not specified, the train, dev or test files should be present."
 
         if data_args.train_file is not None:
             train_data = load_from_json_file(data_args.train_file)
@@ -397,6 +430,7 @@ if __name__ == "__main__":
             )
             logging.info(f"train_dataset length: {len(train_dataset)}")
 
+        eval_dataset = None
         if data_args.validation_file is not None:
             dev_data = load_from_json_file(data_args.validation_file)
             eval_dataset = FusionInDecoderDataset(
@@ -406,6 +440,16 @@ if __name__ == "__main__":
                 train=False,
             )
             logging.info(f"eval_dataset length: {len(eval_dataset)}")
+
+        if data_args.test_file is not None:
+            test_data = load_from_json_file(data_args.test_file)
+            test_dataset = FusionInDecoderDataset(
+                test_data,
+                passage_count=data_args.passage_count,
+                max_samples=data_args.max_predict_samples,
+                train=False,
+            )
+            logging.info(f"test_dataset length: {len(test_dataset)}")
 
         # allow the collator to parse the json keys:
         training_args.remove_unused_columns = False
@@ -444,6 +488,9 @@ if __name__ == "__main__":
         rouge_metric = evaluate.load("rouge")
 
     def compute_metrics(eval_preds):
+        if eval_dataset is None:
+            return {}
+
         preds, labels = eval_preds
         if isinstance(preds, tuple):
             preds = preds[0]
@@ -497,7 +544,7 @@ if __name__ == "__main__":
     if training_args.do_train:
         logging.info("*** Train ***")
 
-        train_result = trainer.train()
+        train_result = trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
         trainer.save_model()  # Saves the tokenizer too for easy upload
 
         metrics = train_result.metrics
@@ -532,3 +579,62 @@ if __name__ == "__main__":
 
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
+
+    # Create a KILT submission file, with each line containing the answer and the input passages.
+    if training_args.do_predict:
+        logging.info("*** Predict ***")
+
+        predict_results = trainer.predict(
+            test_dataset, metric_key_prefix="predict", max_length=max_length, num_beams=num_beams
+        )
+        metrics = predict_results.metrics
+        max_predict_samples = (
+            data_args.max_predict_samples
+            if data_args.max_predict_samples is not None
+            else len(test_dataset)
+        )
+        metrics["predict_samples"] = min(max_predict_samples, len(test_dataset))
+
+        trainer.log_metrics("predict", metrics)
+        trainer.save_metrics("predict", metrics)
+
+        if trainer.is_world_process_zero():
+            if training_args.predict_with_generate:
+                predictions = tokenizer.batch_decode(
+                    predict_results.predictions,
+                    skip_special_tokens=True,
+                    clean_up_tokenization_spaces=True,
+                )
+                predictions = [pred.strip() for pred in predictions]
+                output_prediction_file = os.path.join(
+                    training_args.output_dir, "generated_predictions.jsonl"
+                )
+
+                kilt_output = []
+                for test_index in range(len(test_dataset)):
+                    example = test_dataset.get_example(test_index)
+                    predicted_value = predictions[test_index]
+
+                    kilt_output.append(
+                        {
+                            "id": example["id"],
+                            "input": example["question"],
+                            "output": [
+                                {
+                                    "answer": predicted_value,
+                                    "provenance": [
+                                        {
+                                            "wikipedia_id": test_context["id"],
+                                            "wikipedia_title": test_context["title"],
+                                        }
+                                        for test_context in example["ctxs"]
+                                    ],
+                                }
+                            ],
+                        }
+                    )
+
+                with open(output_prediction_file, "w") as outfile:
+                    for entry in kilt_output:
+                        json.dump(entry, outfile)
+                        outfile.write("\n")

@@ -2,7 +2,7 @@ type: QdrantDocumentStore
 url: localhost
 port: 6333
 index: my_index
-embeddings_dim: 768
+embedding_dim: 768
 similarity: dot_product
 hnsw_config:
   m: 64

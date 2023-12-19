@@ -4,15 +4,18 @@ import pathlib
 
 import kilt.eval_retrieval as retrieval_metrics
 import pandas as pd
+import torch
 import tqdm
 from datasets import load_dataset
 from haystack import Pipeline
 from haystack.document_stores import ElasticsearchDocumentStore
-from haystack.nodes import BM25Retriever, FARMReader, SentenceTransformersRanker
+from haystack.nodes import BM25Retriever, FARMReader, PromptModel, SentenceTransformersRanker
+from haystack.nodes.prompt import AnswerParser, PromptNode
+from haystack.nodes.prompt.prompt_template import PromptTemplate
 from kilt.eval_downstream import _calculate_metrics, validate_input
 from tqdm import tqdm
 
-from fastrag.readers.FiD import FiDReader
+from fastrag.prompters.invocation_layers import fid
 from fastrag.retrievers.colbert import ColBERTRetriever
 from fastrag.stores import PLAIDDocumentStore
 from fastrag.utils import get_timing_from_pipeline
@@ -84,11 +87,19 @@ retriever = ColBERTRetriever(document_store=document_store)
 
 reranker = SentenceTransformersRanker(model_name_or_path="cross-encoder/ms-marco-MiniLM-L-12-v2")
 
-reader = FiDReader(
-    input_converter_tokenizer_max_len=250,
-    max_length=20,
-    model_name_or_path="Intel/fid_t5_large_nq",
+PrompterModel = PromptModel(
+    model_name_or_path="Intel/fid_flan_t5_base_nq",
     use_gpu=True,
+    invocation_layer_class=fid.FiDHFLocalInvocationLayer,
+    model_kwargs=dict(
+        model_kwargs=dict(device_map={"": 0}, torch_dtype=torch.bfloat16, do_sample=False),
+        generation_kwargs=dict(max_length=10),
+    ),
+)
+
+reader = PromptNode(
+    model_name_or_path=PrompterModel,
+    default_prompt_template=PromptTemplate("{query}", output_parser=AnswerParser()),
 )
 
 

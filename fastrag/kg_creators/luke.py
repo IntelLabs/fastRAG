@@ -1,11 +1,15 @@
 import nltk
 import nltk.data
-import spacy
+from haystack.lazy_imports import LazyImport
 from haystack.nodes.base import BaseComponent
-from spacy.cli import download
 from tqdm import tqdm
 from transformers import LukeTokenizer
 from transformers.models.luke.modeling_luke import LukeForEntityPairClassification
+
+with LazyImport("Run 'pip install .[knowledge_graph]' to use fastRAG KG components") as kg_imports:
+    import spacy
+    from spacy.cli import download
+
 
 RELEVANT_ENTITY_LABELS = ["PERSON", "NORP", "FAC", "ORG", "GPE", "LOC", "PRODUCT", "EVENT", "DATE"]
 
@@ -123,6 +127,7 @@ class LukeKGCreator(BaseComponent):
         max_length: int = 256,
         spacy_package: str = "en_core_web_sm",
     ):
+        kg_imports.check()
         nltk.download("punkt")
         download(spacy_package)
         self.model = LukeForEntityPairClassification.from_pretrained(model_name)

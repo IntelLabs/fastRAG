@@ -7,7 +7,8 @@
 | RAG pipeline with FiD generator | [:notebook_with_decorative_cover:](examples/fid_promping.ipynb) |
 | RAG pipeline with REPLUG-based generator | [:notebook_with_decorative_cover:](examples/replug_parallel_reader.ipynb) |
 | RAG pipeline with LLMs running on Gaudi2 |[:notebook_with_decorative_cover:](examples/inference_with_gaudi.ipynb) |
-| RAG pipeline with quantized LLMs running on ONNX-running backend | [:notebook_with_decorative_cover:](examples/inference_with_gaudi.ipynb) |
+| RAG pipeline with quantized LLMs running on ONNX-running backend | [:notebook_with_decorative_cover:](examples/rag_with_quantized_llm.ipynb) |
+| RAG pipeline with LLMs running on Llama-CPP backend | [:notebook_with_decorative_cover:](examples/client_inference_with_Llama_cpp.ipynb) |
 | Optimized and quantized Embeddings models for retrieval and ranking | [:notebook_with_decorative_cover:](examples/optimized-embeddings.ipynb) |
 | RAG pipeline with PLAID index and ColBERT Ranker | [:notebook_with_decorative_cover:](examples/plaid_colbert_pipeline.ipynb) |
 | RAG pipeline with Qdrant index | [:notebook_with_decorative_cover:](examples/qdrant_document_store.ipynb) |

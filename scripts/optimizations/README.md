@@ -18,3 +18,4 @@ Reduction in bit count leads to a model that requires less memory storage, poten
 | [LLM Quantization](LLM-quantization.md)                             | `optimum-intel`             | CPU     |
 | [Bi-encoder Quantization](embedders/README.md)                      | `optimum-intel`             | CPU     |
 | [Cross-encoder Quantization](reranker_quantization/quantization.md) | `neural-compressor`, `ipex` | CPU     |
+| [LlamaCPP LLMs](Llama_CPP.md)                                       | `llama_cpp`                 | CPU     |

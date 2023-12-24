@@ -54,6 +54,10 @@ For a brief overview of the various unique components in fastRAG refer to the [C
     <td><em>Running LLMs with optimized ONNX-runtime</td>
   </tr>
   <tr>
+    <td><a href="components.md#fastrag-running-rag-pipelines-with-llms-on-a-llama-cpp-backend">Llama-CPP</a></td>
+    <td><em>Running RAG Pipelines with LLMs on a Llama CPP backend</td>
+  </tr>
+  <tr>
     <td colspan="2"><strong><em>Optimized Components</em></td>
   </tr>
   <tr>

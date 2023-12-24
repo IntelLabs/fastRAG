@@ -7,7 +7,7 @@ from haystack.pipelines.base import read_pipeline_config_from_yaml
 from fastrag import kg_creators, prompters, rankers, readers, retrievers, stores
 from fastrag.utils import add_timing_to_pipeline
 
-__version__ = "2.0.0rc0"
+__version__ = "2.0.0"
 
 
 def load_pipeline(path):

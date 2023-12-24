@@ -1,0 +1,7 @@
+type: fastrag.data_loaders.HFDatasetLoader
+dataset_info:
+    path: "bigbio/pubmed_qa"
+    name: "pubmed_qa_artificial_bigbio_qa"
+    split: "train"
+encoding_method: "pubmedqa_hf"
+batch_size: 10000

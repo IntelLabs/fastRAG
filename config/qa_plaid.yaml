@@ -11,16 +11,32 @@ components:
     top_k: 10
     use_gpu: false
   type: ColBERTRetriever
+- name: PromptModel
+  params:
+    model_kwargs:
+        model_kwargs:
+            device_map: {"": 0}
+            torch_dtype: torch.bfloat16
+            do_sample: false
+        generation_kwargs:
+            max_length: 10
+    model_name_or_path: "Intel/fid_flan_t5_base_nq"
+    invocation_layer_class: fastrag.prompters.invocation_layers.fid.FiDHFLocalInvocationLayer
+    use_gpu: true
+  type: PromptModel
+- name: AnswerParser
+  params: {}
+  type: AnswerParser
+- name: lfqa
+  params:
+    output_parser: AnswerParser
+    prompt: "{query}"
+  type: PromptTemplate
 - name: Reader
   params:
-    input_converter_tokenizer_max_len: 512
-    max_length: 100
-    min_length: 2
-    model_name_or_path: Intel/fid_t5_large_nq
-    num_beams: 3
-    top_k: 2
-    use_gpu: true
-  type: FiDReader
+    default_prompt_template: lfqa
+    model_name_or_path: PromptModel
+  type: PromptNode
 pipelines:
 - name: my_pipeline
   nodes:

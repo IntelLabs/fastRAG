@@ -6,7 +6,7 @@ The following document describes the process of contributing and developing exte
 
 Preliminary requirements:
 
-- fastRAG installed in a developement enviroment (via `pip install -e`)
+- fastRAG installed in a development environment (via `pip install -e`)
 - Python 3.8+
 - Pytorch
 - Any 3rd party store engine package

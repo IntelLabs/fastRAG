@@ -1,6 +1,0 @@
-type: ImageDiffuserGenerator
-model_name: CompVis/stable-diffusion-v1-4
-access_token: REPLACE_WITH_GITHUB_ACCESS_TOKEN
-use_gpu: True
-batch_size: 1
-num_inference_steps: 5

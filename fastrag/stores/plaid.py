@@ -1,15 +1,20 @@
+import logging
 import math
 from typing import List
 
 import pandas as pd
-from colbert import Indexer, Searcher
-from colbert.infra import ColBERTConfig, Run, RunConfig
 from haystack.document_stores import BaseDocumentStore
+from haystack.lazy_imports import LazyImport
 from haystack.schema import Document
 
-from fastrag.utils import init_logger
+with LazyImport(
+    "Run 'pip install libs/colbert' from root dir to install ColBERT lib"
+) as colbert_import:
+    from colbert import Indexer, Searcher
+    from colbert.infra import ColBERTConfig, Run, RunConfig
 
-logger = init_logger(__name__)
+
+logger = logging.getLogger(__name__)
 
 
 class PLAIDDocumentStore(BaseDocumentStore):
@@ -46,6 +51,7 @@ class PLAIDDocumentStore(BaseDocumentStore):
         query_maxlen=60,
         kmeans_niters=4,
     ):
+        colbert_import.check()
         super().__init__()
         self.index_path = index_path
         self.checkpoint_path = checkpoint_path

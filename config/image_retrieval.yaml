@@ -1,0 +1,22 @@
+components:
+- name: InMemoryDocumentStore
+  params:
+    embedding_dim: 512
+  type: InMemoryDocumentStore
+- name: retriever_text_to_image
+  params:
+    devices:
+    - cpu
+    document_embedding_models:
+      image: sentence-transformers/clip-ViT-B-32
+    document_store: InMemoryDocumentStore
+    query_embedding_model: sentence-transformers/clip-ViT-B-32
+    top_k: 1
+  type: MultiModalRetriever
+pipelines:
+- name: query
+  nodes:
+  - inputs:
+    - Query
+    name: retriever_text_to_image
+version: 1.21.0rc0

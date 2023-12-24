@@ -25,15 +25,16 @@ python scripts/indexing/create_faiss.py \
     --index-save-path <save path>
 ```
 
-**3. Qdrant**:
+**3. Qdrant + SentenceTransformers**:
 
-For creating a [Qdrant](https://qdrant.tech/)-based dense index with DPR as an embedder/retriver, the following script can be used:
+For creating a [Qdrant](https://qdrant.tech/)-based dense index with a sentence-transformer model as an embedder/retriver, the following script can be used:
 
 ```sh
-python scripts/indexing/create_qdrant.py \
-    --store config/store/qdrant.yaml \
-    --data config/data/wikipedia_w100_hfdataset.yaml \
-    --embedder config/embedder/dpr.yaml
+python scripts/indexing/create_embeddings.py                \
+       --data config/data/wikipedia_hf_6M.yaml              \
+       --embedder config/embedder/sentence-transformer.yaml \
+       --store config/store/qdrant.yaml                     \
+       --batch_size 64
 ```
 
 **4. PLAID**:

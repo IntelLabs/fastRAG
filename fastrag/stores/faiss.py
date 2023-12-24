@@ -1,13 +1,10 @@
-import os
+import logging
 from pathlib import Path
 from typing import Optional, Union
 
-import faiss
 from haystack.document_stores import FAISSDocumentStore
 
-from fastrag.utils import init_logger
-
-logger = init_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class FastRAGFAISSStore(FAISSDocumentStore):
@@ -17,7 +14,7 @@ class FastRAGFAISSStore(FAISSDocumentStore):
         vector_dim: Optional[int] = None,
         embedding_dim: int = 768,
         faiss_index_factory_str: str = "Flat",
-        faiss_index: Optional[faiss.swigfaiss.Index] = None,
+        faiss_index=None,
         return_embedding: bool = False,
         index: str = "document",
         similarity: str = "dot_product",

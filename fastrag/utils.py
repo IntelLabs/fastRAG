@@ -1,6 +1,4 @@
-import logging
 import re
-import sys
 from enum import Enum
 from functools import wraps
 from importlib import import_module
@@ -8,7 +6,6 @@ from time import perf_counter
 from typing import Any, Dict, Optional
 
 import yaml
-from haystack import Pipeline
 from haystack.nodes import BaseComponent
 
 
@@ -27,15 +24,6 @@ def fastrag_timing(self, fn, attr_name):
         return ret
 
     return wrapper
-
-
-def safe_import(import_path: str, classname: str):
-    try:
-        module = import_module(import_path)
-        classs = vars(module).get(classname)
-    except ImportError as ie:
-        classs = missing_deps(classname, ie)
-    return classs
 
 
 def add_timing_to_pipeline(fn):
@@ -76,16 +64,6 @@ def missing_deps(classname: str, import_error: Exception):
             return None
 
     return MissingDependency
-
-
-def init_logger(filename=None):
-    logger = logging.getLogger(filename or __name__)
-    logging.basicConfig(
-        datefmt="%m/%d/%Y %H:%M:%S",
-        level=logging.INFO,
-        format="[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s",
-    )
-    return logger
 
 
 def init_haystack_cls(component_name: str, parameters: Dict[str, Any], name: Optional[str] = None):

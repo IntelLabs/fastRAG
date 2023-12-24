@@ -2,12 +2,17 @@ from pathlib import Path
 from typing import List, Optional, Union
 
 import torch
-from colbert.infra import ColBERTConfig
-from colbert.modeling.checkpoint import Checkpoint
-from colbert.search.strided_tensor_core import StridedTensorCore
+from haystack.lazy_imports import LazyImport
 from haystack.modeling.utils import initialize_device_settings
 from haystack.nodes.ranker import BaseRanker
 from haystack.schema import Document
+
+with LazyImport(
+    "Run 'pip install libs/colbert' from root dir to install ColBERT lib"
+) as colbert_import:
+    from colbert.infra import ColBERTConfig
+    from colbert.modeling.checkpoint import Checkpoint
+    from colbert.search.strided_tensor_core import StridedTensorCore
 
 
 class ColBERTRanker(BaseRanker):
@@ -21,6 +26,7 @@ class ColBERTRanker(BaseRanker):
         use_gpu: bool = False,
         devices: Optional[List[Union[int, str, torch.device]]] = None,
     ):
+        colbert_import.check()
         self.top_k = top_k
 
         if devices is not None:

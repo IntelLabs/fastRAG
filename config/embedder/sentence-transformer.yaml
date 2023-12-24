@@ -1,0 +1,9 @@
+type: EmbeddingRetriever
+embedding_model: "BAAI/llm-embedder"
+model_format: sentence_transformers
+pooling_strategy: cls_token
+embed_meta_fields: ['title']  # optional
+query_prompt: "Represent this query for retrieving relevant documents: " # embedding prompts require haystack > 1.23
+passage_prompt: "Represent this document for retrieval: "
+batch_size: 256
+use_gpu: true

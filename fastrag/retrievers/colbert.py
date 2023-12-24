@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional, Union
 
 import torch
@@ -5,10 +6,9 @@ from haystack.modeling.utils import initialize_device_settings
 from haystack.nodes.retriever.base import BaseRetriever
 from haystack.schema import Document
 
-import fastrag
 from fastrag.stores import PLAIDDocumentStore
 
-logger = fastrag.utils.init_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ColBERTRetriever(BaseRetriever):

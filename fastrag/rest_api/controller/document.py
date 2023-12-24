@@ -14,7 +14,6 @@
 # This file is based on https://github.com/deepset-ai/haystack
 # See: https://github.com/deepset-ai/haystack/blob/main/rest_api/controller/document.py
 
-import logging
 from typing import List
 
 from fastapi import APIRouter, FastAPI
@@ -24,10 +23,6 @@ from schema import FilterRequest
 from utils import get_app, get_pipelines
 
 from config import LOG_LEVEL
-
-logging.getLogger("haystack").setLevel(LOG_LEVEL)
-logger = logging.getLogger("haystack")
-
 
 router = APIRouter()
 app: FastAPI = get_app()

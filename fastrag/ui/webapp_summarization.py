@@ -21,8 +21,13 @@ from pathlib import Path
 
 import streamlit as st
 from annotated_text import annotation
+from haystack.lazy_imports import LazyImport
 from markdown import markdown
-from PIL import Image
+
+with LazyImport("Run 'pip install pillow'") as pillow_import:
+    from PIL import Image
+
+pillow_import.check()
 
 from fastrag.ui.utils import (
     API_ENDPOINT,
@@ -123,6 +128,8 @@ This is a demo of a generative Summarization pipeline, using the fastRAG package
     )
 
     # Sidebar
+    pillow_import.check()
+
     image_thumb = Image.open(INTEL_LABS_IMAGE_PATH)
     st.sidebar.image(image_thumb, width=100)
     st.sidebar.header("Options")

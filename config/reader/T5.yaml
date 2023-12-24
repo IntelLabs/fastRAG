@@ -1,9 +1,0 @@
-type: T5Reader
-model_name_or_path:  "t5-small"  #"t5-small" or "MaRiOrOsSi/t5-base-finetuned-question-answering" or "mrm8488/t5-base-finetuned-quartz"
-top_k: 2 #Number of independently generated text to return
-max_length: 100 #Maximum length of generated text
-min_length: 2 #Minimum length of generated text
-num_beams: 3 #Number of beams for beam search. 1 means no beam search
-use_gpu: True
-input_converter_tokenizer_max_len: 512
-input_converter_mode: "summarization" # "qa" or "translation" or "summarization"

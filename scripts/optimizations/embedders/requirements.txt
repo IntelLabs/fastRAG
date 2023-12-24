@@ -1,0 +1,7 @@
+optimum[neural-compressor] @ --upgrade-strategy eager
+mteb
+mteb[beir]
+evaluate
+mpi4py
+intel-extension-for-transformers
+aim

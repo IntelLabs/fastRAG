@@ -1,0 +1,7 @@
+type: fastrag.data_loaders.HFDatasetLoader
+dataset_info:
+    path: "wikipedia"
+    name: "20220301.en"
+    split: "train"
+encoding_method: "wikipedia_hf_multisentence"
+batch_size: 500

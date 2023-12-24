@@ -16,6 +16,7 @@
 
 import collections
 import json
+import logging
 import time
 from typing import Any, Dict
 
@@ -28,11 +29,10 @@ from ..schema import QueryRequest, QueryResponse
 
 BaseConfig.arbitrary_types_allowed = True
 
-import fastrag
-
 from ..utils import get_app
 
-logger = fastrag.utils.init_logger(__name__)
+logger = logging.getLogger(__name__)
+
 
 router = APIRouter()
 app: FastAPI = get_app()
@@ -59,7 +59,7 @@ def _process_request(pipeline, request) -> Dict[str, Any]:
 
     # format targeted node filters (e.g. "params": {"Retriever": {"filters": {"value"}}})
     for key in params.keys():
-        if isinstance(params[key], collections.Mapping) and "filters" in params[key].keys():
+        if isinstance(params[key], collections.abc.Mapping) and "filters" in params[key].keys():
             params[key]["filters"] = _format_filters(params[key]["filters"])
 
     if "generation_kwargs" in params:
@@ -79,11 +79,7 @@ def _process_request(pipeline, request) -> Dict[str, Any]:
 
         for n in pipeline.components.values():
             if isinstance(n, PromptNode):
-                template_names = n.get_prompt_template_names()
-                if new_prompt.name in template_names:
-                    del n.prompt_templates[new_prompt.name]
-                n.add_prompt_template(new_prompt)
-                n.set_default_prompt_template(new_prompt)
+                n.default_prompt_template = new_prompt
         del params["input_prompt"]
 
     pipeline_components_list = list(pipeline.components.keys())
@@ -102,6 +98,96 @@ def _process_request(pipeline, request) -> Dict[str, Any]:
         result["answers"] = []
     if "results" in result:
         result["answers"] = [Answer(res, "generative") for res in result["results"]]
+
+    logger.info(
+        json.dumps(
+            {
+                "request": request,
+                "response": result,
+                "time": f"{(time.time() - start_time):.2f}",
+            },
+            default=str,
+        )
+    )
+    return result
+
+
+@router.post("/chat", response_model=QueryResponse, response_model_exclude_none=True)
+def chat(request: QueryRequest):
+    """
+    This endpoint receives the user input as a string and allows the requester to set
+    additional parameters that will be passed on to the Haystack pipeline.
+    """
+
+    result = _process_request_chat(app.pipeline, request)
+    return result
+
+
+@router.post("/reset_chat", response_model=QueryResponse, response_model_exclude_none=True)
+def reset_chat(request: QueryRequest):
+    """
+    This endpoint receives the user input as a string and allows the requester to set
+    additional parameters that will be passed on to the Haystack pipeline.
+    """
+    app.pipeline.agent.memory.clear()
+    return {"query": "Chat Reset Complete"}
+
+
+@router.post("/upload_docs", response_model=QueryResponse, response_model_exclude_none=True)
+def upload_docs(request: QueryRequest):
+    """
+    This endpoint receives the user input as a string and allows the requester to set
+    additional parameters that will be passed on to the Haystack pipeline.
+    """
+    app.pipeline.upload_docs(request.params)
+    return {"query": "Upload DOCS Complete"}
+
+
+@router.post("/upload_images", response_model=QueryResponse, response_model_exclude_none=True)
+def upload_images(request: QueryRequest):
+    """
+    This endpoint receives the user input as a string and allows the requester to set
+    additional parameters that will be passed on to the Haystack pipeline.
+    """
+    app.pipeline.upload_images(request.params)
+    return {"query": "Upload IMAGES Complete"}
+
+
+@router.post("/delete_all_data", response_model=QueryResponse, response_model_exclude_none=True)
+def upload_docs(request: QueryRequest):
+    """
+    This endpoint receives the user input as a string and allows the requester to set
+    additional parameters that will be passed on to the Haystack pipeline.
+    """
+    app.pipeline.delete_all_data(request.params)
+    return {"query": "Deleted all data"}
+
+
+def _process_request_chat(pipeline, request) -> Dict[str, Any]:
+    start_time = time.time()
+    params = request.params or {}
+
+    if "filters" in params.keys():
+        params["filters"] = _format_filters(params["filters"])
+
+    result, returned_docs, user_prompt, image_data = pipeline.run(
+        query=request.query,
+        params=params,
+        use_retrieval=params["use_retrieval"],
+        use_image_retrieval=params["use_image_retrieval"],
+    )
+
+    # Ensure answers and documents exist, even if they're empty lists
+    if "documents" not in result:
+        result["documents"] = []
+    if "answers" not in result:
+        result["answers"] = []
+    if "results" in result:
+        result["answers"] = [Answer(res, "generative") for res in result["results"]]
+
+    result["query"] = user_prompt
+    result["documents"] = returned_docs
+    result["images"] = image_data if "images" in image_data else {}
 
     logger.info(
         json.dumps(

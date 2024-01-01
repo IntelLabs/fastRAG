@@ -24,9 +24,6 @@ def get_conversation_pipeline(args):
             "invocation_layer_class"
         ] = "fastrag.prompters.invocation_layers.vqa.VQAHFLocalInvocationLayer"
 
-    # Replace the type strings specified with types
-    fastrag.replace_class_names_with_types(chat_model_config)
-
     PrompterModel = PromptModel(**chat_model_config)
 
     # Initialize a separate summary model, if specified

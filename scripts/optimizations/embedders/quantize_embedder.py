@@ -171,6 +171,7 @@ def _run_validation(model, task, model_path):
     return acc
 
 
+@torch.inference_mode()
 def validate_model(model_path, task, pooling, is_optimized=False):
     qm = INCModel.from_pretrained(model_path)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -179,12 +180,9 @@ def validate_model(model_path, task, pooling, is_optimized=False):
         if task == "retrieval":
             query_prompt = "Represent this sentence for searching relevant passages: "
         model = EmbedderModelMTEB(qm, tokenizer, pooling=pooling, query_prompt=query_prompt)
-        with torch.no_grad(), torch.cpu.amp.autocast():
-            acc = _run_validation(model, task, model_path)
     else:
         model = SentenceTransformer(model_path)
-        with torch.no_grad():
-            acc = _run_validation(model, task, model_path)
+    _run_validation(model, task, model_path)
 
 
 if __name__ == "__main__":

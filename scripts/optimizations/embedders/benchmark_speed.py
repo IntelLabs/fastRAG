@@ -77,7 +77,6 @@ if __name__ == "__main__":
     )
     parser.add_argument("--ipex", action="store_true")
     parser.add_argument("--bf16", action="store_true")
-    parser.add_argument("--torch_dynamo", action="store_true")
     parser.add_argument(
         "--samples",
         type=int,
@@ -103,49 +102,16 @@ if __name__ == "__main__":
 
     # load the tokenizer and Embedder model
     tokenizer = AutoTokenizer.from_pretrained(args.model_name, use_fast=True)
-    opt_model = EmbedderModel(model, tokenizer)
+    opt_model = EmbedderModel(model, tokenizer, benchmark_mode=True)
 
     benchmark = PerformanceBenchmark(opt_model, opt_model.tokenizer)
 
     if "inc" == args.mode:
-        with torch.no_grad(), torch.cpu.amp.autocast():
-            print("INC model benchmark + ipex + cpu.amp")
-            benchmark.run_benchmark(
-                batch_size=args.bs,
-                num_samples=args.samples,
-                warmup=args.warmup,
-                sequence_length=args.seq_len,
-            )
-    elif "hf" == args.mode:
-        with torch.no_grad():
-            benchmark.run_benchmark(
-                batch_size=args.bs,
-                num_samples=args.samples,
-                warmup=args.warmup,
-                sequence_length=args.seq_len,
-            )
+        args.bf16 = False
     elif "ipex" == args.mode:
         model.model = ipex.optimize(
             opt_model.model, dtype=torch.bfloat16 if args.bf16 else torch.float32
         )
-        if args.torch_dynamo:
-            opt_model.model = torch.compile(opt_model.model, backend="ipex")
-        if args.bf16:
-            with torch.no_grad(), torch.cpu.amp.autocast():
-                benchmark.run_benchmark(
-                    batch_size=args.bs,
-                    num_samples=args.samples,
-                    warmup=args.warmup,
-                    sequence_length=args.seq_len,
-                )
-        else:
-            with torch.no_grad():
-                benchmark.run_benchmark(
-                    batch_size=args.bs,
-                    num_samples=args.samples,
-                    warmup=args.warmup,
-                    sequence_length=args.seq_len,
-                )
     elif "ipex-ts" == args.mode:
         opt_model.model = ipex.optimize(
             opt_model.model, dtype=torch.bfloat16 if args.bf16 else torch.float32
@@ -153,34 +119,25 @@ if __name__ == "__main__":
         vocab_size = opt_model.model.config.vocab_size
         batch_size = 1
         seq_length = args.seq_len
-        if args.bf16:
-            with torch.no_grad(), torch.cpu.amp.autocast():
-                d = torch.randint(vocab_size, size=[batch_size, seq_length])
-                opt_model.model = torch.jit.trace(
-                    opt_model.model, (d,), check_trace=False, strict=False
-                )
-                opt_model.model = torch.jit.freeze(opt_model.model)
+        d = torch.randint(vocab_size, size=[batch_size, seq_length])
+        opt_model.model = torch.jit.trace(opt_model.model, (d,), check_trace=False, strict=False)
+        opt_model.model = torch.jit.freeze(opt_model.model)
 
-                benchmark.run_benchmark(
-                    batch_size=args.bs,
-                    num_samples=args.samples,
-                    warmup=args.warmup,
-                    sequence_length=args.seq_len,
-                )
-        else:
-            with torch.no_grad():
-                d = torch.randint(vocab_size, size=[batch_size, seq_length])
-                opt_model.model = torch.jit.trace(
-                    opt_model.model, (d,), check_trace=False, strict=False
-                )
-                opt_model.model = torch.jit.freeze(opt_model.model)
+    @torch.inference_mode()
+    def _run():
+        benchmark.run_benchmark(
+            batch_size=args.bs,
+            num_samples=args.samples,
+            warmup=args.warmup,
+            sequence_length=args.seq_len,
+        )
+        return benchmark
 
-                benchmark.run_benchmark(
-                    batch_size=args.bs,
-                    num_samples=args.samples,
-                    warmup=args.warmup,
-                    sequence_length=args.seq_len,
-                )
+    if args.bf16:
+        with torch.cpu.amp.autocast(dtype=torch.bfloat16):
+            benchmark = _run()
+    else:
+        benchmark = _run()
     run.track(benchmark.metrics["time_avg_ms"], name="time_avg_ms")
     run.track(benchmark.metrics["time_std_ms"], name="time_std_ms")
     run.report_successful_finish()

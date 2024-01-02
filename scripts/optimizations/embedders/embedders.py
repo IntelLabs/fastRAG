@@ -6,18 +6,28 @@ from tqdm import trange
 
 
 class EmbedderModel:
-    def __init__(self, model, tokenizer, pooling: str = "mean", query_prompt: str = None):
+    def __init__(
+        self,
+        model,
+        tokenizer,
+        pooling: str = "mean",
+        query_prompt: str = None,
+        benchmark_mode=False,
+    ):
         self.tokenizer = tokenizer
         self.model = model
         self.pooling = pooling
         self.max_position_embeddings = self.model.config.max_position_embeddings
         self.vocab_size = self.model.config.vocab_size
         self.query_prompt = query_prompt
+        self.benchmark_mode = benchmark_mode
 
     def embed(self, inputs, normalize: bool = False):
         with torch.no_grad():
-            # outputs = self.model(input_ids=inputs['input_ids'])
-            outputs = self.model(**inputs)
+            if not self.benchmark_mode:
+                outputs = self.model(**inputs)
+            else:
+                outputs = self.model(input_ids=inputs["input_ids"])
             if self.pooling == "mean":
                 emb = self._mean_pooling(outputs, inputs["attention_mask"])
             elif self.pooling == "cls":

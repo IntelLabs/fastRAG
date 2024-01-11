@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
     # load the tokenizer and Embedder model
     tokenizer = AutoTokenizer.from_pretrained(args.model_name, use_fast=True)
-    opt_model = EmbedderModel(model, tokenizer, benchmark_mode=True)
+    opt_model = EmbedderModel(model, tokenizer)
 
     benchmark = PerformanceBenchmark(opt_model, opt_model.tokenizer)
 
@@ -113,6 +113,7 @@ if __name__ == "__main__":
             opt_model.model, dtype=torch.bfloat16 if args.bf16 else torch.float32
         )
     elif "ipex-ts" == args.mode:
+        opt_model.benchmark_mode = True
         opt_model.model = ipex.optimize(
             opt_model.model, dtype=torch.bfloat16 if args.bf16 else torch.float32
         )

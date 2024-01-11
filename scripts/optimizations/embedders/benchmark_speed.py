@@ -57,6 +57,7 @@ class PerformanceBenchmark:
         time_avg_ms = 1000 * np.mean(latencies)
         time_std_ms = 1000 * np.std(latencies)
         print(f"Average latency (ms) - {time_avg_ms:.2f} +/- {time_std_ms:.2f}")
+        print(f"Average throughput (ms) - {1.0/(time_avg_ms/1000):.2f}")
         return {"time_avg_ms": time_avg_ms, "time_std_ms": time_std_ms}
 
     def run_benchmark(self, batch_size=1, num_samples=1000, warmup=50, sequence_length=512):

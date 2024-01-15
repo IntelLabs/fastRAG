@@ -71,6 +71,7 @@ The script can benchmark the following model backends:
 
 The benchmarking script has several argument that define the benchmark:
 
+- `--model-name`: path to a quantized model or a Huggingface model name
 - `--mode`: `inc`, `hf`, `ipex`, `ipex-ts`; model types
 - `--bf16`: activate `bf16` inference
 - `--samples`: the number of samples to run in the benchmark

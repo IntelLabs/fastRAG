@@ -10,6 +10,8 @@ from optimum.intel import INCModel
 from tqdm import trange
 from transformers import AutoModel, AutoTokenizer
 
+torch.set_flush_denormal(True)
+
 
 def generate_random_sequences(vocab_size, batch_size, sequence_length):
     input_ids = torch.randint(0, vocab_size - 1, (batch_size, sequence_length))
@@ -109,8 +111,11 @@ if __name__ == "__main__":
 
     if "inc" == args.mode:
         args.bf16 = False
+    elif "hf" == args.mode:
+        if args.bf16:
+            opt_model.model = opt_model.model.to(dtype=torch.bfloat16) 
     elif "ipex" == args.mode:
-        model.model = ipex.optimize(
+        opt_model.model = ipex.optimize(
             opt_model.model, dtype=torch.bfloat16 if args.bf16 else torch.float32
         )
     elif "ipex-ts" == args.mode:

@@ -2,7 +2,7 @@
 
 | Example notebook                         | Link |
 |------------------------------------------|-------------|
-| RAG pipeline for question-answering | [:notebook_with_decorative_cover:](examples/simple_oqda_pipeline.ipynb) |
+| RAG pipeline for question-answering | [:notebook_with_decorative_cover:](examples/simple_odqa_pipeline.ipynb) |
 | RAG pipeline with LLMs loaded from Hugging Face | [:notebook_with_decorative_cover:](examples/rag-prompt-hf.ipynb) |
 | RAG pipeline with FiD generator | [:notebook_with_decorative_cover:](examples/fid_promping.ipynb) |
 | RAG pipeline with REPLUG-based generator | [:notebook_with_decorative_cover:](examples/replug_parallel_reader.ipynb) |
@@ -34,7 +34,7 @@ flowchart LR
     style id4 fill:#D5E8D4,stroke:#82B366
 ```
 
-:notebook: [Simple generative open-domain QA with BM25 and ST](examples/simple_oqda_pipeline.ipynb)
+:notebook: [Simple generative open-domain QA with BM25 and ST](examples/simple_odqa_pipeline.ipynb)
 </br>
 :notebook: [Efficient and fast ODQA with PLAID, ColBERT and FiD](examples/plaid_colbert_pipeline.ipynb)</br>
 :notebook: [Quantized Retrievers and Rankers using bi-encoders](examples/optimized-embeddings.ipynb)

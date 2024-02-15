@@ -110,7 +110,7 @@ There are several dependencies to consider, depending on your specific usage:
 pip install .[intel]               # Intel optimized backend [Optimum-intel, IPEX]
 pip install .[elastic]             # Support for ElasticSearch store
 pip install .[qdrant]              # Support for Qdrant store
-pip install libs/colbert           # Indexing engine for ColBERT/PLAID
+pip install .[colbert]             # Support for ColBERT+PLAID; requires FAISS
 pip install .[faiss-cpu]           # CPU-based Faiss library
 pip install .[faiss-gpu]           # GPU-based Faiss library
 pip install .[knowledge_graph]     # Libraries for working with spacy and KG

@@ -7,7 +7,7 @@ from datasets import Dataset, load_dataset
 from embedders import EmbedderModelMTEB
 from mteb import MTEB
 from neural_compressor.config import PostTrainingQuantConfig
-from optimum.intel import INCModel, INCQuantizer
+from optimum.intel import IPEXModel, INCQuantizer
 from sentence_transformers import SentenceTransformer
 from simple_parsing import field
 from transformers import AutoModel, AutoTokenizer
@@ -173,7 +173,7 @@ def _run_validation(model, task, model_path):
 
 @torch.inference_mode()
 def validate_model(model_path, task, pooling, is_optimized=False):
-    qm = INCModel.from_pretrained(model_path)
+    qm = IPEXModel.from_pretrained(model_path)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     if is_optimized:
         query_prompt = None

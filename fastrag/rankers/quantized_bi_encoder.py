@@ -11,7 +11,7 @@ from fastrag.rankers import BiEncoderRanker
 with LazyImport(
     "Run pip install .[intel]' to install Intel optimized frameworks"
 ) as optimized_intel_import:
-    from optimum.intel import INCModel
+    from optimum.intel import IPEXModel
 
 
 class QuantizedBiEncoderRanker(BiEncoderRanker):
@@ -75,10 +75,10 @@ class QuantizedBiEncoderRanker(BiEncoderRanker):
 
     def warm_up(self):
         try:
-            self.transformer_model = INCModel.from_pretrained(self.model_name_or_path)
+            self.transformer_model = IPEXModel.from_pretrained(self.model_name_or_path)
         except:
             raise HaystackError(
-                f"Failed to load an optimized INCModel from {self.model_name_or_path}"
+                f"Failed to load an optimized IPEXModel from {self.model_name_or_path}"
             )
         self.transformer_tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=self.model_name_or_path,

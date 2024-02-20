@@ -1,7 +1,7 @@
-optimum[neural-compressor] @ --upgrade-strategy eager
+intel-extension-for-transformers==2.2.0
+optimum[neural-compressor, ipex]
 mteb
 mteb[beir]
 evaluate
 mpi4py
-intel-extension-for-transformers
 aim

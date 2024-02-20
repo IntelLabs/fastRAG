@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from aim import Run
 from embedders import EmbedderModel
-from optimum.intel import INCModel
+from optimum.intel import IPEXModel
 from tqdm import trange
 from transformers import AutoModel, AutoTokenizer
 
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     # load the right type of model
     if "inc" == args.mode:
         # benchmark optimized model
-        model = INCModel.from_pretrained(args.model_name)
+        model = IPEXModel.from_pretrained(args.model_name)
     else:
         model = AutoModel.from_pretrained(args.model_name)
 

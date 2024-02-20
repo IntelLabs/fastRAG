@@ -29,7 +29,7 @@ Quantize [`BAAI/bge-small-en-v1.5`](https://huggingface.co/BAAI/bge-small-en-v1.
 python quantize_embedder.py --quantize --model_name BAAI/bge-small-en-v1.5 --output_path quantized_model/ --sample_size 100
 ```
 
-Benchmark a quantized model on the rerank tasks of MTEB. Use `--benchmark` to run only benchmarking and `--opt` for benchmarking a quantized model:
+Benchmark a quantized model on the Reranking tasks of MTEB. Use `--benchmark` to run only benchmarking and `--opt` for benchmarking a quantized model:
 
 ```bash
 python quantize_embedder.py --benchmark --opt --model_name quantized_model/ --task rerank
@@ -42,15 +42,15 @@ Running inference using a quantized model is similar to Hugging Face API. We use
 **Loading a model:**
 
 ```python
-from optimum.intel import INCModel
+from optimum.intel import IPEXModel
 
-model = INCModel.from_pretrained(model_name_or_path)
+model = IPEXModel.from_pretrained("Intel/bge-small-en-v1.5-rag-int8-static")
 ```
 
 **Inference with auto-mixed precision (bf16):**
 
 ```python
-with torch.no_grad(), torch.cpu.amp.autocast():
+with torch.no_grad():
     outputs = model(**inputs)
 ```
 
@@ -80,7 +80,7 @@ The benchmarking script has several argument that define the benchmark:
 - `--warmup`: the number of warmup cycles to do before measuring latency/throughput
 
 To effectively utilize the CPU resources when running on a Intel Xeon processors, we should limit the processes to run on a single socket. This can be done by using `numactl`.
-In addition, it is recommanded to use TCMalloc for better performance when accessing commonly-used objects.
+In addition, it is recommended to use TCMalloc for better performance when accessing commonly-used objects.
 
 #### Using `numactl`
 

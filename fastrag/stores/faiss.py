@@ -3,8 +3,14 @@ from pathlib import Path
 from typing import Optional, Union
 
 from haystack.document_stores import FAISSDocumentStore
+from haystack.lazy_imports import LazyImport
 
 logger = logging.getLogger(__name__)
+
+with LazyImport(
+    "Install Faiss by running `pip install .[faiss-cpu]` or `faiss-gpu`"
+) as faiss_import:
+    import faiss
 
 
 class FastRAGFAISSStore(FAISSDocumentStore):
@@ -29,6 +35,7 @@ class FastRAGFAISSStore(FAISSDocumentStore):
         ef_construction: int = 80,
         validate_index_sync: bool = True,
     ):
+        faiss_import.check()
         if faiss_index_path is None:
             try:
                 file_path = sql_url.split("sqlite:///")[1]

@@ -154,7 +154,7 @@ def upload_images(request: QueryRequest):
 
 
 @router.post("/delete_all_data", response_model=QueryResponse, response_model_exclude_none=True)
-def upload_docs(request: QueryRequest):
+def delete_all_data(request: QueryRequest):
     """
     This endpoint receives the user input as a string and allows the requester to set
     additional parameters that will be passed on to the Haystack pipeline.

@@ -1,4 +1,4 @@
-intel-extension-for-transformers==2.2.0
+intel-extension-for-pytorch
 optimum[neural-compressor, ipex]
 mteb
 mteb[beir]

@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> We're migrating `fastRAG` to Haystack v2.0 API and will release a major update soon. Stay tuned!
+
 <div align="center">
     <img src="assets/fastrag_header.png" width="300"/>
 

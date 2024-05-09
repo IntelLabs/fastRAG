@@ -6,7 +6,7 @@ from typing import Dict, List
 
 import pandas as pd
 from datasets import load_dataset
-from haystack.schema import Document
+from haystack import Document
 from tqdm import tqdm
 
 from fastrag.utils import AnswerGroundType, remove_html_from_text
@@ -21,13 +21,19 @@ except ImportError as e:
 
 
 class BaseParser:
-    def __init__(self, batch_size):
+    def __init__(self, batch_size, limit=None):
         # since document_store.write_documents *requires* batch_size, this parameter is required
         self.batch_size = batch_size
+        self.limit = limit
 
     @abstractmethod
     def __iter__(self):
         pass
+
+
+def text_encoder(row) -> Document:
+    """encoder for text passages"""
+    return Document(content=str(row["text"]))
 
 
 def wikidpedia_data_encoder(row) -> Document:
@@ -116,6 +122,7 @@ def wikipedia_hf_multisentence_encoder(doc) -> List[Document]:
 
 
 encoding_methods = {
+    "text": text_encoder,
     "wikidpedia_data": wikidpedia_data_encoder,
     "squad_odqa": squad_odqa_encoder,
     "nq_decoder": wiki_odqa_tasks_encoder,
@@ -134,12 +141,13 @@ class HFDatasetLoader(BaseParser):
         dataset_info,
         encoding_method,
         batch_size=1,
+        limit=None,
     ):
-        super().__init__(batch_size)
+        super().__init__(batch_size, limit)
 
         # load the dataset from HF
         self.data = load_dataset(**dataset_info)
-        self.length = len(self.data)
+        self.length = self.limit or len(self.data)
         self.chunks = (self.length // self.batch_size) + 1
         self.encode_fn = encoding_methods[encoding_method]
 
@@ -159,7 +167,7 @@ class HFDatasetLoader(BaseParser):
         docs = []
         for j in range(i * self.batch_size, end_size):
             encoding_results = self.encode_fn(self.data[j])
-            if type(encoding_results) == list:
+            if isinstance(encoding_results, list):
                 docs.extend(encoding_results)
             else:
                 docs.append(encoding_results)
@@ -250,11 +258,12 @@ class CSVFileLoader(BaseParser):
         encoding_method,
         delimiter="\t",
         batch_size=1,
+        limit=None,
     ):
-        super().__init__(batch_size)
+        super().__init__(batch_size, limit)
 
         self.filepath = filepath
-        self.file_length = _get_file_length(self.filepath)
+        self.file_length = self.limit or _get_file_length(self.filepath)
         self.iterations_count = math.ceil(self.file_length / self.batch_size)
         self.delimiter = delimiter
         self.encode_fn = row_parser_functions[encoding_method]

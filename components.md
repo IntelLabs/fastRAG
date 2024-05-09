@@ -1,7 +1,5 @@
 # fast**RAG** Components Overview
 
-
-
 ## REPLUG
 <image align="right" src="assets/replug.png" width="600">
 
@@ -12,9 +10,9 @@ process a larger number of retrieved documents, without limiting ourselves to th
 method works with any LLM, no fine-tuning is needed. See ([Shi et al. 2023](#shiREPLUGRetrievalAugmentedBlackBox2023))
 for more details.
 
-We provide implementation for the REPLUG ensembling inference, using the invocation layer
-`ReplugHFLocalInvocationLayer`; Our implementation supports most Hugging FAce models with `.generate()` capabilities (such that implement the generation mixin); For a complete example, see [REPLUG Parallel
-Reader](examples/replug_parallel_reader.ipynb) notebook.
+We provide implementation for the REPLUG ensembling inference, using the generator `ReplugGenerator`; Our implementation
+supports most Hugging FAce models with `.generate()` capabilities (such that implement the generation mixin); For a
+complete example, see [REPLUG Parallel Reader](examples/replug_parallel_reader.ipynb) notebook.
 
 ## ColBERT v2 with PLAID Engine
 
@@ -82,11 +80,10 @@ We enabled support for running LLMs on Habana Gaudi (DL1) and Habana Gaudi 2 by 
 See below an example for loading a `PromptModel` with Habana backend:
 
 ```python
-from fastrag.prompters.invocation_layers.gaudi_hugging_face_inference import GaudiHFLocalInvocationLayer
+from fastrag.generators import GaudiGenerator
 
-PrompterModel = PromptModel(
+generator = GaudiGenerator(
     model_name_or_path= "meta-llama/Llama-2-7b-chat-hf",
-    invocation_layer_class=GaudiHFLocalInvocationLayer,
     model_kwargs= dict(
         max_new_tokens=50,
         torch_dtype=torch.bfloat16,
@@ -137,18 +134,60 @@ quantizer.quantize(save_dir=os.path.join(converted_model_path, 'quantized'), qua
 
 ### Loading the Quantized Model
 
-Now that our model is quantized, we can load it in our framework, by specifying the ```ORTInvocationLayer``` invocation layer.
+Now that our model is quantized, we can load it in our framework, by using the ```ORTGenerator``` generator.
 
 ```python
-PrompterModel = PromptModel(
-    model_name_or_path= "my/local/path/quantized",
-    invocation_layer_class=ORTInvocationLayer,
+generator = ORTGenerator(
+    model="my/local/path/quantized",
+    task="text-generation",
+    generation_kwargs={
+        "max_new_tokens": 100,
+    }
+)
+```
+
+## fastRAG running quantized LLMs using OpenVINO
+
+We provide a method for running quantized LLMs with [OpenVINO](https://docs.openvino.ai/2024/home.html) and [optimum-intel](https://github.com/huggingface/optimum-intel).
+We recommend checking out our [notebook](examples/rag_with_openvino.ipynb) with all the details, including the quantization and pipeline construction.
+
+### Installation
+
+Run the following command to install our dependencies:
+
+```
+pip install -e .[openvino]
+```
+
+For more information regarding the installation process, we recommend checking out the guides provided by [OpenVINO](https://docs.openvino.ai/2024/home.html) and [optimum-intel](https://github.com/huggingface/optimum-intel).
+
+### LLM Quantization
+
+We can use the [OpenVINO tutorial notebook](https://github.com/openvinotoolkit/openvino_notebooks/blob/main/notebooks/254-llm-chatbot/254-llm-chatbot.ipynb) to quantize an LLM to our liking.
+
+### Loading the Quantized Model
+
+Now that our model is quantized, we can load it in our framework, by using the ```OpenVINOGenerator``` component.
+
+```python
+from fastrag.generators.openvino import OpenVINOGenerator
+
+openvino_compressed_model_path = "path/to/model"
+
+generator = OpenVINOGenerator(
+    model="microsoft/phi-2",
+    compressed_model_dir=openvino_compressed_model_path,
+    device_openvino="CPU",
+    task="text-generation",
+    generation_kwargs={
+        "max_new_tokens": 100,
+    }
 )
 ```
 
 ## fastRAG Running RAG Pipelines with LLMs on a Llama CPP backend
 
-To run LLM effectively on CPUs, especially on client side machines, we offer a method for running LLMs using the [llama-cpp](https://github.com/ggerganov/llama.cpp).
+To run LLMs effectively on CPUs, especially on client side machines, we offer a method for running LLMs using the [llama-cpp](https://github.com/ggerganov/llama.cpp).
 We recommend checking out our [tutorial notebook](examples/client_inference_with_Llama_cpp.ipynb) with all the details, including processes such as downloading GGUF models.
 
 ### Installation
@@ -175,7 +214,6 @@ PrompterModel = PromptModel(
     )
 )
 ```
-
 
 ## Optimized Embedding Models
 

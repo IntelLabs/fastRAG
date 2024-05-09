@@ -1,0 +1,2 @@
+from fastrag.prompt_compressors.llm_lingua import LLMLinguaPromptCompressor
+from fastrag.prompt_compressors.ov_llm_lingua import OVLLMLinguaPromptCompressor

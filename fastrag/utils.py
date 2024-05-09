@@ -6,7 +6,8 @@ from time import perf_counter
 from typing import Any, Dict, Optional
 
 import yaml
-from haystack.nodes import BaseComponent
+
+# from haystack.nodes import BaseComponent
 
 
 # adapted from https://github.com/deepset-ai/haystack/blob/594d2a10f84d13aef495c1cfbdaf4acad730c914/haystack/nodes/ranker/base.py#L68

@@ -1,6 +1,3 @@
-> [!IMPORTANT]
-> We're migrating `fastRAG` to Haystack v2.0 API and will release a major update soon. Stay tuned!
-
 <div align="center">
     <img src="assets/fastrag_header.png" width="300"/>
 
@@ -23,9 +20,8 @@ Comments, suggestions, issues and pull-requests are welcomed! :heart:
 
 ## :mega: Updates
 
-- **2024-04**: [(Extra Demo)](extras/rag_on_client.ipynb) **Chat with your documents on Intel Meteor Lake iGPU**.
-- **2023-12**: Gaudi2, ONNX runtime and LlamaCPP support; Optimized Embedding models; Multi-modality and Chat demos; [REPLUG](https://arxiv.org/abs/2301.12652) text generation.
-- **2023-06**: ColBERT index modification: adding/removing documents; see [IndexUpdater](https://github.com/stanford-futuredata/ColBERT/blob/main/colbert/index_updater.py).
+- **2023-12**: Gaudi2 and ONNX runtime support; Optimized Embedding models; Multi-modality and Chat demos; [REPLUG](https://arxiv.org/abs/2301.12652) text generation.
+- **2023-06**: ColBERT index modification: adding/removing documents; see [IndexUpdater](libs/colbert/colbert/index_updater.py).
 - **2023-05**: [RAG with LLM and dynamic prompt synthesis example](examples/rag-prompt-hf.ipynb).
 - **2023-04**: Qdrant `DocumentStore` support.
 
@@ -56,6 +52,10 @@ For a brief overview of the various unique components in fastRAG refer to the [C
   <tr>
     <td><a href="components.md#fastrag-running-llms-with-onnx-runtime">ONNX Runtime</a></td>
     <td><em>Running LLMs with optimized ONNX-runtime</td>
+  </tr>
+  <tr>
+    <td><a href="components.md#fastrag-running-quantized-llms-using-openvino">OpenVINO</a></td>
+    <td><em>Running quantized LLMs using OpenVINO</td>
   </tr>
   <tr>
     <td><a href="components.md#fastrag-running-rag-pipelines-with-llms-on-a-llama-cpp-backend">Llama-CPP</a></td>
@@ -117,7 +117,6 @@ pip install .[qdrant]              # Support for Qdrant store
 pip install .[colbert]             # Support for ColBERT+PLAID; requires FAISS
 pip install .[faiss-cpu]           # CPU-based Faiss library
 pip install .[faiss-gpu]           # GPU-based Faiss library
-pip install .[knowledge_graph]     # Libraries for working with spacy and KG
 
 # User interface (for demos)
 pip install .[ui]

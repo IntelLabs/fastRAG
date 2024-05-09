@@ -1,0 +1,8 @@
+type: fastrag.data_loaders.HFDatasetLoader
+dataset_info:
+    path: wikitext
+    name: wikitext-2-v1
+    split: train
+encoding_method: text
+batch_size: 100
+limit:

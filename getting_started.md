@@ -1,14 +1,22 @@
 # :red_car: Getting Started
 
-fastRAG leverages Haystack's pipelining abstraction. We recommend constructing a flow by incorporating components provided by fastRAG and Haystack, tailored to the specific task you aim to tackle. There are various approaches to achieving this using fastRAG.
+fastRAG leverages Haystack's pipelining abstraction. We recommend constructing a flow by incorporating components
+provided by fastRAG and Haystack, tailored to the specific task you aim to tackle. There are various approaches to
+achieving this using fastRAG.
 
 ## Defining Pipelines in your Code
 
-To define a pipeline in your Python code, you can initialize all the components with the desired configuration directly in your code. This allows you to have full control over the pipeline structure and parameters. For concrete examples and detailed implementation guidance, please refer to the example [notebooks](examples/) provided by our team.
+To define a pipeline in your Python code, you can initialize all the components with the desired configuration directly
+in your code. This allows you to have full control over the pipeline structure and parameters. For concrete examples and
+detailed implementation guidance, please refer to the example [notebooks](examples/) provided by our team.
 
 ## Defining Pipelines Using YAML
 
-Another approach to defining pipelines is by writing a YAML file following Haystack's format. This method allows for a more declarative and modular pipeline configuration. You can find detailed information on how to define pipelines using a YAML file in the [Haystack documentation](https://docs.haystack.deepset.ai/docs/pipelines#yaml-file-definitions). The documentation provides guidance on the structure of the YAML file, available components, their parameters, and how to combine them to create a custom pipeline.
+Another approach to defining pipelines is by writing a YAML file following Haystack's format. This method allows for a
+more declarative and modular pipeline configuration. You can find detailed information on how to define pipelines using
+a YAML file in the [Haystack documentation](https://docs.haystack.deepset.ai/docs/pipelines#yaml-file-definitions). The
+documentation provides guidance on the structure of the YAML file, available components, their parameters, and how to
+combine them to create a custom pipeline.
 
 We have provided miscellaneous pipeline configurations in the config directory.
 

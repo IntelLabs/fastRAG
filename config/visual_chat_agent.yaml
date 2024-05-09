@@ -1,0 +1,25 @@
+chat_model:
+  generator_kwargs:
+      model: xtuner/llava-llama-3-8b-v1_1-transformers
+      task: "image-to-text"
+      generation_kwargs:
+        max_new_tokens: 100
+        do_sample: false
+      huggingface_pipeline_kwargs:
+        torch_dtype: torch.bfloat16
+  generator_class: fastrag.generators.llava.LlavaHFGenerator
+tools:
+  - type: doc_with_image
+    query_handler:
+        type: "haystack_yaml"
+        params:
+            pipeline_yaml_path: "config/empty_retrieval_pipeline.yaml"
+    index_handler:
+        type: "haystack_yaml"
+        params:
+            pipeline_yaml_path: "config/empty_index_pipeline.yaml"
+    params:
+      name: "docRetriever"
+      description: 'useful for when you need to retrieve images and text to answer questions. Use the following format: {{ "input": [your tool input here ] }}.'
+      # description: 'useful for when you need to retrieve textual documents to answer questions. Use the following format: {{ "input": [tool input here ] }}. DO NOT WRITE A URL!'
+      output_variable: "documents"

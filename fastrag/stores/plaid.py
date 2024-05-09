@@ -1,15 +1,12 @@
+import inspect
 import logging
-import math
-from typing import List
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
-from haystack.document_stores import BaseDocumentStore
+from haystack import Document, default_from_dict, default_to_dict
 from haystack.lazy_imports import LazyImport
-from haystack.schema import Document
 
-with LazyImport(
-    "Run 'pip install libs/colbert' from root dir to install ColBERT lib"
-) as colbert_import:
+with LazyImport("Run 'pip install .[colbert]' to install the ColBERT library.") as colbert_import:
     from colbert import Indexer, Searcher
     from colbert.infra import ColBERTConfig, Run, RunConfig
 
@@ -17,7 +14,7 @@ with LazyImport(
 logger = logging.getLogger(__name__)
 
 
-class PLAIDDocumentStore(BaseDocumentStore):
+class PLAIDDocumentStore:
     """
     Store for ColBERT v2 with PLAID indexing.
 
@@ -38,6 +35,50 @@ class PLAIDDocumentStore(BaseDocumentStore):
 
     """
 
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Serializes this store to a dictionary.
+        """
+        params = inspect.signature(self.__init__).parameters
+        init_params = {k: getattr(self, k) for k in params}
+        return default_to_dict(
+            self,
+            **init_params,
+        )
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "PLAIDDocumentStore":
+        """
+        Deserializes the store from a dictionary.
+        """
+        return default_from_dict(cls, data)
+
+    def count_documents(self) -> int:
+        """
+        Returns the number of documents stored.
+        """
+        return len(self.docs)
+
+    def filter_documents(self, filters: Optional[Dict[str, Any]] = None) -> List[Document]:
+        """
+        Returns the documents that match the filters provided.
+        """
+        pass
+
+    def write_documents(self, documents: List[Document], **kwargs) -> int:
+        """
+        Writes (or overwrites) documents into the DocumentStore, return the number of documents that was written.
+        """
+        raise Exception(
+            "PLAIDDocumentStore can only be used as a read-only store. A new index is needed for adding/changing documents"
+        )
+
+    def delete_documents(self, document_ids: List[str]) -> None:
+        """
+        Deletes all documents with a matching document_ids from the DocumentStore.
+        """
+        pass
+
     def __init__(
         self,
         index_path,
@@ -52,7 +93,6 @@ class PLAIDDocumentStore(BaseDocumentStore):
         kmeans_niters=4,
     ):
         colbert_import.check()
-        super().__init__()
         self.index_path = index_path
         self.checkpoint_path = checkpoint_path
         self.collection_path = collection_path
@@ -105,63 +145,6 @@ class PLAIDDocumentStore(BaseDocumentStore):
 
         logger.info("Created PLAIDDocumentStore Index.")
 
-    def write_documents(self, dataset, batch_size=1):
-        raise Exception(
-            "PLAIDDocumentStore can only be used as a read-only store. A new index is needed for adding/changing documents"
-        )
-
-    def get_all_documents(self):
-        raise NotImplementedError
-
-    def get_all_documents_generator(self):
-        raise NotImplementedError
-
-    def delete_index(self):
-        raise NotImplementedError
-
-    def get_all_labels(self):
-        raise NotImplementedError
-
-    def query_by_embedding(self):
-        raise NotImplementedError
-
-    def get_label_count(self):
-        raise NotImplementedError
-
-    def write_labels(self):
-        raise NotImplementedError
-
-    def delete_documents(self):
-        raise NotImplementedError
-
-    def delete_labels(self):
-        raise NotImplementedError
-
-    def _create_document_field_map(self):
-        raise NotImplementedError
-
-    def get_documents_by_id(self):
-        raise NotImplementedError
-
-    def get_document_by_id(self):
-        raise NotImplementedError
-
-    def update_document_meta(self):
-        raise NotImplementedError
-
-    @staticmethod
-    def _normalize_scores(docs: List[Document]) -> None:
-        "Normalizing the MaxSim scores using softmax."
-        Z = sum(math.exp(doc.score) for doc in docs)
-        for doc in docs:
-            doc.score = math.exp(doc.score) / Z
-
-    def get_document_count(self):
-        """
-        Returns the number of docs in the collection.
-        """
-        return len(self.docs)
-
     def query(self, query_str, top_k=10) -> List[Document]:
         """
         Query the Colbert v2 + Plaid store.
@@ -182,36 +165,5 @@ class PLAIDDocumentStore(BaseDocumentStore):
             )
             for _id, score in zip(doc_ids, scores)
         ]
-
-        # self._normalize_scores(documents)
-
-        return documents
-
-    def query_batch(self, query_strs: List[str], top_k=10) -> List[List[Document]]:
-        """
-        Query batch the Colbert v2 + Plaid store.
-
-        Returns: lists of lists of Haystack documents.
-        """
-
-        query = self.store.search_all({i: s for i, s in enumerate(query_strs)}, k=top_k)
-        documents = []
-
-        for result in query.data.values():
-            s_docs = [
-                Document.from_dict(
-                    {
-                        "content": self.docs.iloc[_id][1],
-                        "id": _id,
-                        "score": score,
-                        "meta": {"title": self.docs.iloc[_id][2] if self.titles else None},
-                    }
-                )
-                for _id, _, score in result
-            ]
-            documents.append(s_docs)
-
-        # for docs in documents:
-        #     self._normalize_scores(docs)
 
         return documents

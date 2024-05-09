@@ -7,7 +7,7 @@ from datasets import Dataset, load_dataset
 from embedders import EmbedderModelMTEB
 from mteb import MTEB
 from neural_compressor.config import PostTrainingQuantConfig
-from optimum.intel import IPEXModel, INCQuantizer
+from optimum.intel import INCQuantizer, IPEXModel
 from sentence_transformers import SentenceTransformer
 from simple_parsing import field
 from transformers import AutoModel, AutoTokenizer

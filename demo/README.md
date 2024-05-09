@@ -50,7 +50,7 @@ Make sure to replace `http://localhost:8000` with the appropriate URL of your fa
 
 ![alt text](../assets/qa_demo.png)
 
-# :fire: (NEW) Chat with Documents and Images :fire:
+# Chat with Documents and Images
 
 We present how to set up a demo with both Textual and Visual Question-Answering Pipelines, for a conversational chat system.
 
@@ -166,9 +166,46 @@ Alternatively, you can deploy the visual chat interface using:
 API_CONFIG_PATH=config/visual_chat.yaml API_ENDPOINT=http://localhost:8000 python -m streamlit run fastrag/ui/chat_ui.py --server.port 8501
 ```
 
-## Screenshot
+### Screenshot
 
 ![alt text](../assets/chat_multimodal.png)
+
+
+## Chat Demo with Chainlit
+
+We also provide the conversation demo with a multi-modal agent, using the [chainlit](https://github.com/Chainlit/chainlit) framework. For more information, please visit their official website [here](https://docs.chainlit.io/get-started/overview).
+
+```sh
+CONFIG=config/visual_chat.yaml chainlit run --port 8000 fastrag/ui/chainlit_multi_modal.py
+```
+
+### Screenshot
+
+![alt text](../assets/chainlit_demo_example.png)
+
+
+# Multi-Modal Conversational Agent with Chainlit
+
+In this demo, we use the [```llava-hf/llava-1.5-7b-hf```](https://huggingface.co/llava-hf/llava-1.5-7b-hf) model as a conversational agent, that can decide which retriever to use to respond to the user's query.
+To perform that, we use dynamic reasoning with [ReAct](https://arxiv.org/abs/2210.03629) prompts, resulting in multiple logical turns.
+To explore all the steps to build the agent system, you can check out our [Example Notebook](../examples/multi_modal_react_agent.ipynb).
+For more information on how to use ReAct, feel free to visit [Haystack's original tutorial](https://haystack.deepset.ai/tutorials/25_customizing_agent), which our demo is based on.
+
+To run the demo, simply run:
+
+```sh
+CONFIG=config/visual_chat_agent.yaml chainlit run fastrag/ui/chainlit_multi_modal_agent.py
+```
+
+We also offer utilizing the [llama-cpp](https://github.com/ggerganov/llama.cpp) implementation of the Llava model as well. We provide an example yaml file for running it, and you can use it by running:
+
+```sh
+CONFIG=config/visual_chat_agent_llamacpp.yaml chainlit run fastrag/ui/chainlit_multi_modal_agent.py
+```
+
+### Screenshot
+
+![alt text](../assets/chainlit_agent_example.png)
 
 # Available Chat Templates
 

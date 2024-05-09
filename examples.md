@@ -1,20 +1,17 @@
 # :dart: Example Use Cases
 
-| Example notebook                         | Link |
-|------------------------------------------|-------------|
-| RAG pipeline for question-answering | [:notebook_with_decorative_cover:](examples/simple_odqa_pipeline.ipynb) |
-| RAG pipeline with LLMs loaded from Hugging Face | [:notebook_with_decorative_cover:](examples/rag-prompt-hf.ipynb) |
-| RAG pipeline with FiD generator | [:notebook_with_decorative_cover:](examples/fid_promping.ipynb) |
-| RAG pipeline with REPLUG-based generator | [:notebook_with_decorative_cover:](examples/replug_parallel_reader.ipynb) |
-| RAG pipeline with LLMs running on Gaudi2 |[:notebook_with_decorative_cover:](examples/inference_with_gaudi.ipynb) |
-| RAG pipeline with quantized LLMs running on ONNX-running backend | [:notebook_with_decorative_cover:](examples/rag_with_quantized_llm.ipynb) |
-| RAG pipeline with LLMs running on Llama-CPP backend | [:notebook_with_decorative_cover:](examples/client_inference_with_Llama_cpp.ipynb) |
-| Optimized and quantized Embeddings models for retrieval and ranking | [:notebook_with_decorative_cover:](examples/optimized-embeddings.ipynb) |
-| RAG pipeline with PLAID index and ColBERT Ranker | [:notebook_with_decorative_cover:](examples/plaid_colbert_pipeline.ipynb) |
-| RAG pipeline with Qdrant index | [:notebook_with_decorative_cover:](examples/qdrant_document_store.ipynb) |
-| Use ChatGPT API to re-rank documents and generate an answer | [:notebook_with_decorative_cover:](examples/gpt_as_both_reranker_and_reader.ipynb) |
-| RAG pipeline for summarization of multiple documents | [:notebook_with_decorative_cover:](examples/od_summarization_pipeline.ipynb) |
-| RAG pipeline with generator and a knowledge-graph | [:notebook_with_decorative_cover:](examples/knowledge_graph_construction.ipynb) |
+| Example notebook                                                    | Link                                                                               |
+|---------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| RAG pipeline with LLMs loaded from Hugging Face                     | [:notebook_with_decorative_cover:](examples/rag-prompt-hf.ipynb)                   |
+| RAG pipeline with FiD generator                                     | [:notebook_with_decorative_cover:](examples/fid_promping.ipynb)                    |
+| RAG pipeline with REPLUG-based generator                            | [:notebook_with_decorative_cover:](examples/replug_parallel_reader.ipynb)          |
+| RAG pipeline with LLMs running on Gaudi2                            | [:notebook_with_decorative_cover:](examples/inference_with_gaudi.ipynb)            |
+| RAG pipeline with quantized LLMs running on ONNX-running backend    | [:notebook_with_decorative_cover:](examples/rag_with_quantized_llm.ipynb)          |
+| RAG pipeline with LLMs running on Llama-CPP backend                 | [:notebook_with_decorative_cover:](examples/client_inference_with_Llama_cpp.ipynb) |
+| Optimized and quantized Embeddings models for retrieval and ranking | [:notebook_with_decorative_cover:](examples/optimized-embeddings.ipynb)            |
+| RAG pipeline with PLAID index and ColBERT Ranker                    | [:notebook_with_decorative_cover:](examples/plaid_colbert_pipeline.ipynb)          |
+| RAG pipeline with Qdrant index                                      | [:notebook_with_decorative_cover:](examples/qdrant_document_store.ipynb)           |
+| RAG pipeline for summarization of multiple documents                | [:notebook_with_decorative_cover:](examples/od_summarization_pipeline.ipynb)       |
 
 ## Efficient Open Domain Question-Answering with Quantized Components
 
@@ -34,8 +31,6 @@ flowchart LR
     style id4 fill:#D5E8D4,stroke:#82B366
 ```
 
-:notebook: [Simple generative open-domain QA with BM25 and ST](examples/simple_odqa_pipeline.ipynb)
-</br>
 :notebook: [Efficient and fast ODQA with PLAID, ColBERT and FiD](examples/plaid_colbert_pipeline.ipynb)</br>
 :notebook: [Quantized Retrievers and Rankers using bi-encoders](examples/optimized-embeddings.ipynb)
 
@@ -59,20 +54,6 @@ flowchart LR
     style id1 fill:#E1D5E7,stroke:#9673A6
     style id2 fill:#DAE8FC,stroke:#6C8EBF
     style id3 fill:#F3CECC,stroke:#B25450
-    style id4 fill:#D5E8D4,stroke:#82B366
-```
-
-## ChatGPT Open Domain Reranking and QA
-
-Use ChatGPT API to both rerank the documents for any query, and provide an answer to the query using the chosen documents.
-
-:notebook: [GPT as both Reranker and Reader](examples/gpt_as_both_reranker_and_reader.ipynb)
-
-```mermaid
-flowchart LR
-    id1[(Index)] <--> id2(.. Retrieval pipeline ..) --> id4(ChatGPT)
-    style id1 fill:#E1D5E7,stroke:#9673A6
-    style id2 fill:#DAE8FC,stroke:#6C8EBF
     style id4 fill:#D5E8D4,stroke:#82B366
 ```
 
@@ -122,18 +103,4 @@ flowchart LR
     style id1 fill:#E1D5E7,stroke:#9673A6
     style id2 fill:#DAE8FC,stroke:#6C8EBF
     style id4 fill:#D5E8D4,stroke:#82B366
-```
-
-## Retrieval-Oriented Knowledge Graph Construction
-
-Use with any retrieval pipeline to extract Named Entities (NER) and generate relation-maps using Relation Classification Model (RC).
-
-:notebook: [Knowledge Graph Construction](examples/knowledge_graph_construction.ipynb)
-
-```mermaid
-flowchart LR
-    id2(.. Retrieval pipeline ..) --> id4(NER) --> id5(RC)
-    style id2 fill:#DAE8FC,stroke:#6C8EBF
-    style id4 fill:#D5E8D4,stroke:#82B366
-    style id5 fill:#F3CECC,stroke:#B25450
 ```

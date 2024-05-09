@@ -37,19 +37,19 @@ quantizer.quantize(save_dir=os.path.join(converted_model_path, 'quantized'), qua
 
 ## Loading the Quantized Model
 
-Now that our model is quantized, we can load it in our framework, by specifying the ```ORTInvocationLayer``` invocation layer.
+Now that our model is quantized, we can load it in our framework, by using the ```ORTGenerator``` generator.
 
 ```python
-PrompterModel = PromptModel(
-    model_name_or_path= "my/local/path/quantized",
-    invocation_layer_class=ORTInvocationLayer,
-    model_kwargs= dict(
-        max_new_tokens=10,
-    )
+generator = ORTGenerator(
+    model="my/local/path/quantized",
+    task="text-generation",
+    generation_kwargs={
+        "max_new_tokens": 100,
+    }
 )
 ```
 
-We also some additional parameters for the [ort.SessionOptions](https://onnxruntime.ai/docs/api/c/struct_ort_1_1_session_options.html) for loading the model:
+We also included some additional parameters for the [ort.SessionOptions](https://onnxruntime.ai/docs/api/c/struct_ort_1_1_session_options.html) for loading the model:
 
 * graph_optimization_level: **str**
 * intra_op_num_threads: **int**
@@ -58,11 +58,13 @@ We also some additional parameters for the [ort.SessionOptions](https://onnxrunt
 For example:
 
 ```python
-PrompterModel = PromptModel(
-    model_name_or_path= "my/local/path/quantized",
-    invocation_layer_class=ORTInvocationLayer,
-    model_kwargs= dict(
-        max_new_tokens=10,
+generator = ORTGenerator(
+    model="my/local/path/quantized",
+    task="text-generation",
+    generation_kwargs={
+        "max_new_tokens": 100,
+    }
+    huggingface_pipeline_kwargs=dict(
         graph_optimization_level="ORT_ENABLE_ALL",
         intra_op_num_threads=6,
         session_config_entries={

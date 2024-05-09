@@ -1,0 +1,6 @@
+type: haystack.components.embedders.SentenceTransformersTextEmbedder
+init_parameters:
+    model: "BAAI/llm-embedder"
+    prefix: "Represent this query for retrieving relevant documents: "
+    batch_size: 256
+    device:

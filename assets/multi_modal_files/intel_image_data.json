@@ -1,0 +1,17 @@
+[
+    {
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/1/13/2200_Mission_College_Boulevard.jpg",
+        "title": "Intel Headquarters",
+        "content": "Headquarters in Santa Clara, California, in 2023"
+    },
+    {
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/6/64/Intel_8742_153056995.jpg",
+        "title": "Intel 8742",
+        "content": "The die from an Intel 8742, an 8-bit microcontroller that includes a CPU running at 12 MHz, 128 bytes of RAM, 2048 bytes of EPROM, and I/O in the same chip"
+    },
+    {
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Intel_Costa_12_2007_SJO_105b.jpg",
+        "title": "microprocessor facility",
+        "content": "Intel microprocessor facility in Costa Rica was responsible in 2006 for 20% of Costa Rican exports and 4.9% of the country's GDP."
+    }
+]

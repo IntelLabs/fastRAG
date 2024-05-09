@@ -1,10 +1,14 @@
 import logging
-import sys
 from typing import Dict, List, Optional, Union
 
 from haystack.lazy_imports import LazyImport
-from haystack.nodes.prompt.invocation_layer import PromptModelInvocationLayer
+from haystack.nodes.prompt.invocation_layer import PromptModelInvocationLayer, TokenStreamingHandler
+from haystack.nodes.prompt.invocation_layer.handlers import (
+    DefaultTokenStreamingHandler,
+    HFTokenStreamingHandler,
+)
 from haystack.nodes.prompt.invocation_layer.hugging_face import HFLocalInvocationLayer
+from transformers import AutoTokenizer
 
 with LazyImport("Install llama_cpp using 'pip install -e .[llama_cpp]'") as llama_cpp_import:
     from llama_cpp import Llama
@@ -27,13 +31,31 @@ class LlamaCPPInvocationLayer(HFLocalInvocationLayer):
     ):
         PromptModelInvocationLayer.__init__(self, model_name_or_path)
 
-        self.llm = Llama(model_path=model_name_or_path)
+        self.model_max_length = kwargs.get("model_max_length", 4096)
+        self.n_threads = kwargs.get("n_threads", None)
+        self.numa = kwargs.get("numa", False)
+
+        self.llm = Llama(
+            model_path=model_name_or_path,
+            n_ctx=self.model_max_length,
+            verbose=False,
+            n_threads=self.n_threads,
+            numa=self.numa,
+        )
         self.max_length = max_length
         self.max_new_tokens = kwargs.get("max_new_tokens", 100)
 
         # Additional properties for Invocation Layer requirements
-        self.model_max_length = kwargs.get("model_max_length", sys.maxsize)
+
         self.generation_kwargs = kwargs
+
+        # save stream settings and stream_handler for pipeline invocation
+        self.stream_handler = kwargs.get("stream_handler", None)
+        self.stream = kwargs.get("stream", False)
+        self.hf_tokenizer_name_or_path = kwargs.get("tokenizer_name_or_path", None)
+
+        if self.hf_tokenizer_name_or_path is not None:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.hf_tokenizer_name_or_path)
 
     def _ensure_token_limit(
         self, prompt: Union[str, List[Dict[str, str]]]
@@ -95,6 +117,7 @@ class LlamaCPPInvocationLayer(HFLocalInvocationLayer):
                     "do_sample",
                     "num_return_sequences",
                     "max_length",
+                    "streamer",
                 ]
                 if key in kwargs
             }
@@ -105,13 +128,39 @@ class LlamaCPPInvocationLayer(HFLocalInvocationLayer):
             echo = model_input_kwargs.get("return_full_text", False)
             max_tokens = model_input_kwargs.get("max_new_tokens", self.max_new_tokens)
 
+            stream = kwargs.get("stream", self.stream)
+            stream_handler = kwargs.get("stream_handler", self.stream_handler)
+
+            stream = stream or stream_handler is not None
+
+            if stream:
+                stream_handler: TokenStreamingHandler = (
+                    stream_handler or DefaultTokenStreamingHandler()
+                )
+                model_input_kwargs["streamer"] = HFTokenStreamingHandler(
+                    self.tokenizer, stream_handler
+                )
+
+            stream = "streamer" in model_input_kwargs
+
             output = self.llm(
                 prompt,  # Prompt
                 max_tokens=max_tokens,  # Generate up to 32 tokens
                 stop=stop_words,  # Stop generating just before the model would generate a new question
                 echo=echo,  # Echo the prompt back in the output
+                stream=stream,  # stream outputs
             )  # Generate a completion, can also call create_completion
 
-            generated_texts = [output["choices"][0]["text"]]
+            total_text = ""
+            if stream:
+                for gen_token in output:
+                    delta = gen_token["choices"][0]
+                    current_token = delta["text"] if delta is not None and "text" in delta else ""
+                    model_input_kwargs["streamer"].token_handler(current_token)
+                    total_text += current_token
+            else:
+                total_text = output["choices"][0]["text"]
+
+            generated_texts = [total_text]
 
         return generated_texts

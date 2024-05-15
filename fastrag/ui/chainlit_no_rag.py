@@ -20,7 +20,14 @@ stream_handler = AgentTokenStreamingHandler(callback_manager)
 streamer = HFTokenStreamingHandler(tokenizer, stream_handler)
 model_pipeline = pipeline(**model_kwargs, return_full_text=False, streamer=streamer)
 
-memory = []
+memory = [
+    {
+        "role": "system",
+        "content": """You are a helpful assistant.
+Your answers must be short and to the point.
+"""
+    }
+]
 
 
 @cl.on_chat_end

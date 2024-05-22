@@ -23,6 +23,7 @@ Comments, suggestions, issues and pull-requests are welcomed! :heart:
 
 ## :mega: Updates
 
+- **2024-05**: fastRAG V3 is Haystack 2.0 compatible :fire:
 - **2023-12**: Gaudi2 and ONNX runtime support; Optimized Embedding models; Multi-modality and Chat demos; [REPLUG](https://arxiv.org/abs/2301.12652) text generation.
 - **2023-06**: ColBERT index modification: adding/removing documents; see [IndexUpdater](libs/colbert/colbert/index_updater.py).
 - **2023-05**: [RAG with LLM and dynamic prompt synthesis example](examples/rag-prompt-hf.ipynb).

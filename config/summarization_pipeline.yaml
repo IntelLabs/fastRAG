@@ -1,43 +1,40 @@
 components:
-- name: InMemoryDocumentStore
-  params:
-    use_bm25: true
-    use_gpu: false
-  type: InMemoryDocumentStore
-- name: Retriever
-  params:
-    document_store: InMemoryDocumentStore
-    top_k: 100
-  type: BM25Retriever
-- name: Reranker
-  params:
-    model_name_or_path: cross-encoder/ms-marco-MiniLM-L-12-v2
-  type: SentenceTransformersRanker
-- name: AnswerParser
-  params: {}
-  type: AnswerParser
-- name: custom-at-query-time
-  params:
-    output_parser: AnswerParser
-    prompt: '{join(documents)}'
-  type: PromptTemplate
-- name: Reader
-  params:
-    default_prompt_template: custom-at-query-time
-    model_kwargs:
-      task_name: text2text-generation
-    model_name_or_path: philschmid/bart-large-cnn-samsum
-  type: PromptNode
-pipelines:
-- name: query
-  nodes:
-  - inputs:
-    - Query
-    name: Retriever
-  - inputs:
-    - Retriever
-    name: Reranker
-  - inputs:
-    - Reranker
-    name: Reader
-version: 1.21.0rc0
+    Retriever:
+        init_parameters:
+            document_store:
+                init_parameters: {}
+                type: haystack.document_stores.in_memory.document_store.InMemoryDocumentStore
+            top_k: 10
+        type: haystack.components.retrievers.in_memory.bm25_retriever.InMemoryBM25Retriever
+    Reranker:
+        init_parameters:
+            model: cross-encoder/ms-marco-MiniLM-L-12-v2
+            device:
+            top_k: 3
+            model_kwargs: {}
+        type: haystack.components.rankers.transformers_similarity.TransformersSimilarityRanker
+    Generator:
+        init_parameters:
+            model: philschmid/bart-large-cnn-samsum
+            task: text2text-generation
+            generation_kwargs:
+                max_new_tokens: 200
+                num_beams: 1
+                early_stopping: true
+                num_return_sequences: 1
+            huggingface_pipeline_kwargs: {}
+        type: haystack.components.generators.hugging_face_local.HuggingFaceLocalGenerator
+    PromptBuilder:
+        init_parameters:
+            template: |
+                {% for doc in documents %}
+                    {{ doc.content }}
+                {% endfor %}
+        type: haystack.components.builders.prompt_builder.PromptBuilder
+connections:
+    - receiver: Reranker.documents
+      sender: Retriever
+    - receiver: PromptBuilder.documents
+      sender: Reranker
+    - receiver: Generator
+      sender: PromptBuilder

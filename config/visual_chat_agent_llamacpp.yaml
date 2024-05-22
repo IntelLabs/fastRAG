@@ -1,0 +1,33 @@
+chat_model:
+  model_kwargs:
+    task_name: text-generation
+    clip_model_path: mys/ggml_llava-v1.5-7b/mmproj-model-f16.gguf
+    vqa_type: llava_llama_cpp
+    tokenizer_name_or_path: llava-hf/llava-1.5-7b-hf
+    model_max_length: 32000
+  max_length: 3000
+  invocation_layer_class: fastrag.prompters.invocation_layers.vqa.VQAHFLocalInvocationLayer
+  model_name_or_path: mys/ggml_llava-v1.5-7b/ggml-model-q4_k.gguf
+  use_gpu: false
+summary_model:
+  model_kwargs:
+    model_max_length: 4096
+    task_name: text-generation
+  model_name_or_path: winglian/Llama-2-3b-hf
+  use_gpu: false
+summary_params:
+  summary_frequency: 1000
+tools:
+  - type: image
+    path: "config/image_retrieval.yaml"
+    params:
+      name: "imageRetriever"
+      description: "useful for when you need to give or retrieve an image to answer questions."
+      output_variable: "documents"
+  - type: doc
+    path: "config/empty_retrieval_pipeline.yaml"
+    params:
+      name: "docRetriever"
+      description: "useful for when you need to retrieve textual documents to answer questions."
+      output_variable: "documents"
+  - type: finish

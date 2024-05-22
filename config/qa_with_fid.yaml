@@ -1,0 +1,32 @@
+components:
+    FiD:
+        init_parameters:
+            model: Intel/fid_flan_t5_base_nq
+            generation_kwargs:
+                max_length: 10
+                do_sample: false
+            huggingface_pipeline_kwargs:
+                device_map: auto
+        type: fastrag.generators.fid.FiDGenerator
+    Reranker:
+        init_parameters:
+            model: cross-encoder/ms-marco-MiniLM-L-12-v2
+            device:
+            top_k: 3
+            model_kwargs: {}
+        type:
+            haystack.components.rankers.transformers_similarity.TransformersSimilarityRanker
+    Retriever:
+        init_parameters:
+            document_store:
+                init_parameters: {}
+                type:
+                    haystack.document_stores.in_memory.document_store.InMemoryDocumentStore
+            top_k: 10
+        type:
+            haystack.components.retrievers.in_memory.bm25_retriever.InMemoryBM25Retriever
+connections:
+    - receiver: Reranker.documents
+      sender: Retriever.documents
+    - receiver: FiD.documents
+      sender: Reranker

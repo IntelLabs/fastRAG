@@ -1,0 +1,27 @@
+chat_model:
+  generator_kwargs:
+      model: microsoft/Phi-3-mini-128k-instruct
+      task: "text-generation"
+      generation_kwargs:
+        max_new_tokens: 300
+        do_sample: false
+      huggingface_pipeline_kwargs:
+        torch_dtype: torch.bfloat16
+        max_new_tokens: 300
+        do_sample: false
+        trust_remote_code: true
+  generator_class: haystack.components.generators.hugging_face_local.HuggingFaceLocalGenerator
+tools:
+  - type: doc
+    query_handler:
+        type: "haystack_yaml"
+        params:
+            pipeline_yaml_path: "config/empty_doc_only_retrieval_pipeline.yaml"
+    index_handler:
+        type: "haystack_yaml"
+        params:
+            pipeline_yaml_path: "config/empty_index_pipeline.yaml"
+    params:
+      name: "docRetriever"
+      description: 'useful for when you need to retrieve text to answer questions. Use the following format: {{ "input": [your tool input here ] }}.'
+      output_variable: "documents"

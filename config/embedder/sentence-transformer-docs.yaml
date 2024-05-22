@@ -1,0 +1,7 @@
+type: haystack.components.embedders.SentenceTransformersDocumentEmbedder
+init_parameters:
+    model: "BAAI/llm-embedder"
+    meta_fields_to_embed: ['title']  # optional
+    prefix: "Represent this document for retrieval: "
+    batch_size: 256
+    device:

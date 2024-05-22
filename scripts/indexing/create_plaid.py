@@ -2,7 +2,14 @@ import argparse
 import logging
 from pathlib import Path
 
+from haystack.lazy_imports import LazyImport
+
 from fastrag.stores import PLAIDDocumentStore
+
+with LazyImport(
+    "Install Faiss using 'pip install faiss-cpu' or 'pip install faiss-gpu'"
+) as faiss_import:
+    import faiss
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +23,10 @@ if __name__ == "__main__":
     parser.add_argument("--doc-max-length", type=int, default=120)
     parser.add_argument("--query-max-length", type=int, default=60)
     parser.add_argument("--kmeans-iterations", type=int, default=4)
-    parser.add_argument("--name", type=str, default="plaid_index")
     parser.add_argument("--nbits", type=int, default=2)
 
     args = parser.parse_args()
+    faiss_import.check()
 
     if args.gpus > 1:
         args.ranks = args.gpus

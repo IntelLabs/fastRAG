@@ -1,0 +1,27 @@
+components:
+    Embedder:
+        init_parameters:
+            model: "BAAI/llm-embedder"
+            prefix: "Represent this query for retrieving relevant documents: "
+            batch_size: 256
+            device:
+        type: haystack.components.embedders.sentence_transformers_text_embedder.SentenceTransformersTextEmbedder
+    Retriever:
+        init_parameters:
+            document_store:
+                init_parameters:
+                    url: qdrant-server-url
+                    port: 6333
+                    index: my_index
+                    embedding_dim: 768
+                    similarity: dot_product
+                    recreate_index: false    # set to true to generate new index
+                    timeout: 60
+                    write_batch_size: 50
+                type: haystack_integrations.document_stores.qdrant.document_store.QdrantDocumentStore
+            top_k: 10
+        type:
+            haystack_integrations.components.retrievers.qdrant.retriever.QdrantEmbeddingRetriever
+connections:
+    - receiver: Retriever.query_embedding
+      sender: Embedder.embedding

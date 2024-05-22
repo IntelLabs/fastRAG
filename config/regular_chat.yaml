@@ -1,0 +1,4 @@
+task: text-generation
+model: "meta-llama/Meta-Llama-3-8B-Instruct"
+do_sample: false
+max_new_tokens: 300

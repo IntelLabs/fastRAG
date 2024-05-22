@@ -113,7 +113,7 @@ if __name__ == "__main__":
         args.bf16 = False
     elif "hf" == args.mode:
         if args.bf16:
-            opt_model.model = opt_model.model.to(dtype=torch.bfloat16) 
+            opt_model.model = opt_model.model.to(dtype=torch.bfloat16)
     elif "ipex" == args.mode:
         opt_model.model = ipex.optimize(
             opt_model.model, dtype=torch.bfloat16 if args.bf16 else torch.float32

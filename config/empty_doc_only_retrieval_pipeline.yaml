@@ -1,0 +1,41 @@
+components:
+  embedder:
+    init_parameters:
+      batch_size: 32
+      device:
+        device: cpu
+        type: single
+      model: sentence-transformers/all-MiniLM-L6-v2
+      normalize_embeddings: false
+      prefix: ''
+      progress_bar: true
+      suffix: ''
+      token:
+        env_vars:
+        - HF_API_TOKEN
+        strict: false
+        type: env_var
+    type: haystack.components.embedders.sentence_transformers_text_embedder.SentenceTransformersTextEmbedder
+  prompt_builder:
+    init_parameters:
+      template: "The result from tool docRetriever:\n{% for document in documents %}\n    {{ document.content }}\n{% endfor %}\n"
+    type: haystack.components.builders.prompt_builder.PromptBuilder
+  retriever:
+    init_parameters:
+      document_store:
+        init_parameters:
+          bm25_algorithm: BM25L
+          bm25_parameters: {}
+          bm25_tokenization_regex: (?u)\b\w\w+\b
+          embedding_similarity_function: dot_product
+        type: haystack.document_stores.in_memory.document_store.InMemoryDocumentStore
+      filters: null
+      return_embedding: false
+      scale_score: false
+      top_k: 1
+    type: haystack.components.retrievers.in_memory.embedding_retriever.InMemoryEmbeddingRetriever
+connections:
+- receiver: retriever.query_embedding
+  sender: embedder.embedding
+- receiver: prompt_builder.documents
+  sender: retriever.documents

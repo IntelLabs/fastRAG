@@ -1,11 +1,13 @@
-type: QdrantDocumentStore
-url: localhost
-port: 6333
-index: my_index
-embedding_dim: 768
-similarity: dot_product
-hnsw_config:
-  m: 64
-  ef_construct: 20
-recreate_index: false    # set to true to generate new index
-timeout: 60
+type: haystack_integrations.document_stores.qdrant.QdrantDocumentStore
+init_parameters:
+    url: qdrant-server-url
+    port: 6333
+    index: my_data
+    embedding_dim: 768
+    similarity: dot_product
+    hnsw_config:
+      m: 64
+      ef_construct: 20
+    recreate_index: false    # set to true to generate new index
+    timeout: 60
+    write_batch_size: 50

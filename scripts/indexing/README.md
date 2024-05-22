@@ -30,11 +30,10 @@ python scripts/indexing/create_faiss.py \
 For creating a [Qdrant](https://qdrant.tech/)-based dense index with a sentence-transformer model as an embedder/retriver, the following script can be used:
 
 ```sh
-python scripts/indexing/create_embeddings.py                \
-       --data config/data/wikipedia_hf_6M.yaml              \
-       --embedder config/embedder/sentence-transformer.yaml \
-       --store config/store/qdrant.yaml                     \
-       --batch_size 64
+python scripts/indexing/create_dense.py                          \
+       --data config/data/wikipedia_hf_6M.yaml                   \
+       --embedder config/embedder/sentence-transformer-docs.yaml \
+       --store config/store/qdrant.yaml
 ```
 
 **4. PLAID**:

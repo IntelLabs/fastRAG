@@ -4,7 +4,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from fastrag.utils import init_cls, init_haystack_cls, load_yaml
+from fastrag.utils import init_cls, load_yaml
 
 logger = logging.getLogger(__name__)
 
@@ -14,13 +14,12 @@ if __name__ == "__main__":
     parser.add_argument("--embedder", type=Path, required=True)
     parser.add_argument("--store", type=Path, required=True)
     parser.add_argument("--batch_num", type=int, required=False)
-    parser.add_argument("--batch_size", type=int, required=False)
 
     args = parser.parse_args()
 
     store_params = load_yaml(args.store)
     store_cls = store_params.pop("type")
-    store = init_haystack_cls(store_cls, store_params)
+    store = init_cls(store_cls, store_params["init_parameters"])
     logger.info("Loaded store backend")
 
     data_params = load_yaml(args.data)
@@ -32,7 +31,8 @@ if __name__ == "__main__":
 
     logger.info("Loading Embedder")
     emb_cls = emb_params.pop("type")
-    emb = init_haystack_cls(emb_cls, emb_params)
+    emb = init_cls(emb_cls, emb_params["init_parameters"])
+    emb.warm_up()
 
     # Can start at a given batch, if provided
     batch_start = args.batch_num or 0
@@ -46,10 +46,7 @@ if __name__ == "__main__":
         if batch_i >= batch_start:
             batch = []
             docs = data.process(batch_i)  # requires the HFDatasetLoader
-            emb_batch = emb.embed_documents(docs)
-            for d, e in zip(docs, emb_batch):
-                d.embedding = e
-                batch.append(d.to_dict())
-            store.write_documents(batch, batch_size=args.batch_size or 100)
+            emb_batch = emb.run(documents=docs)
+            store.write_documents(emb_batch["documents"], policy="overwrite")
 
     logger.info("Done.")

@@ -1,0 +1,45 @@
+components:
+    Retriever:
+        init_parameters:
+            document_store:
+                init_parameters: {}
+                type: haystack.document_stores.in_memory.document_store.InMemoryDocumentStore
+            top_k: 10
+        type: haystack.components.retrievers.in_memory.bm25_retriever.InMemoryBM25Retriever
+    Reranker:
+        init_parameters:
+            model: cross-encoder/ms-marco-MiniLM-L-12-v2
+            device:
+            top_k: 3
+            model_kwargs: {}
+        type: haystack.components.rankers.transformers_similarity.TransformersSimilarityRanker
+    Replug:
+        init_parameters:
+            model: meta-llama/Llama-2-7b-chat-hf
+            generation_kwargs:
+                max_new_tokens: 20
+            huggingface_pipeline_kwargs:
+                device_map: auto
+            doc_sep_token: "###REPLUG-DOC###"
+        type: fastrag.generators.replug.ReplugGenerator
+    PromptBuilder:
+        init_parameters:
+            template: |-
+                [INST] <<SYS>>
+                Answer the Question below using only the Document provided.
+                Do not use any prior knowledge to answer the question.
+                Your answer can only be an entity name or a short phrase.
+
+                Document: ###REPLUG-DOC###
+                <</SYS>>
+
+                Question: {{ query }}
+                Answer: [/INST]
+        type: haystack.components.builders.prompt_builder.PromptBuilder
+connections:
+    - receiver: Reranker.documents
+      sender: Retriever
+    - receiver: Replug.documents
+      sender: Reranker
+    - receiver: Replug.prompt
+      sender: PromptBuilder

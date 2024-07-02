@@ -25,7 +25,7 @@ setup(
     author="Intel Labs",
     version=get_version("fastrag/__init__.py"),
     packages=find_namespace_packages(include=["fastrag*"]),
-    description="An Efficient Retrieval Augmentation and Generation Framework for Intel Hardwares.",
+    description="An Efficient Retrieval Augmentation and Generation Framework for Intel Hardware.",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     url="https://github.com/IntelLabs/fastRAG",

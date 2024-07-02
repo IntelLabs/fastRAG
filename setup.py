@@ -1,14 +1,13 @@
-import codecs
 import os
 import pathlib
 
-from setuptools import setup
+from setuptools import find_namespace_packages, find_packages, setup
 
 here = pathlib.Path(__file__).parent.resolve()
 
 
 def read(rel_path):
-    with codecs.open(os.path.join(here, rel_path), "r") as fp:
+    with open(os.path.join(here, rel_path), "r", encoding="utf-8") as fp:
         return fp.read()
 
 
@@ -21,15 +20,22 @@ def get_version(rel_path):
     raise RuntimeError("Unable to find version string.")
 
 
-# Get the long description from the README file
-long_description = (here / "README.md").read_text(encoding="utf-8")
-
 setup(
     name="fastrag",
     author="Intel Labs",
     version=get_version("fastrag/__init__.py"),
-    description="A research framework for building and evaluating neural information retrieval and generative models.",
-    long_description=long_description,
+    packages=find_namespace_packages(include=["fastrag*"]),
+    description="An Efficient Retrieval Augmentation and Generation Framework for Intel Hardwares.",
+    long_description=read("README.md"),
     long_description_content_type="text/markdown",
+    url="https://github.com/IntelLabs/fastRAG",
+    license="Apache-2.0",
     python_requires=">=3.8, <4",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Software Development :: Libraries",
+    ],
 )

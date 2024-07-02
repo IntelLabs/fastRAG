@@ -4,6 +4,15 @@ We provide scripts for running some well known benchmarks with fastRAG. The goal
 
 We report results as compared with the original benchmark papers.
 
+## Installation
+
+Running the benchmarks require some additional packages:
+
+``` sh
+pip install beir
+pip install git+https://github.com/facebookresearch/KILT.git
+```
+
 ## :beers: BeIR Benchmark
 
 [BeIR](https://github.com/beir-cellar/beir) contains diverse IR tasks ([Thakur et al. 2021](#org29ef2fc)); here we focus on MSMARCO and NaturalQuestions (NQ). For each task, we test two pipelines:

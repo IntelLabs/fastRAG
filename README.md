@@ -7,8 +7,10 @@
     <p>Build and explore efficient retrieval-augmented generative models and applications</p>
 </h4>
 
-:round_pushpin: <a href="#round_pushpin-installation">Installation</a> • :rocket: <a href="components.md">Components</a> • :books: <a href="examples.md">Examples</a> • :red_car: <a href="getting_started.md">Getting Started</a> • :pill: <a href="Demo.md">Demos</a> • :pencil2: <a href="scripts/README.md">Scripts</a> • :bar_chart: <a href="benchmarks/README.md">Benchmarks</a>
+![PyPI - Version](https://img.shields.io/pypi/v/fastrag)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/fastrag)
 
+:round_pushpin: <a href="#round_pushpin-installation">Installation</a> • :rocket: <a href="components.md">Components</a> • :books: <a href="examples.md">Examples</a> • :red_car: <a href="getting_started.md">Getting Started</a> • :pill: <a href="Demo.md">Demos</a> • :pencil2: <a href="scripts/README.md">Scripts</a> • :bar_chart: <a href="benchmarks/README.md">Benchmarks</a>
 
 </div>
 
@@ -105,13 +107,21 @@ Preliminary requirements:
 - **Python** 3.8 or higher.
 - **PyTorch** 2.0 or higher.
 
-To set up the software, clone the project and run the following, preferably in a newly created virtual environment:
+To set up the software, install from `pip` or clone the project for the bleeding-edge updates. Run the following, preferably in a newly created virtual environment:
+
+via `pip` pypi:
+
+```bash
+pip install fastrag
+```
+
+or from a local clone:
 
 ```bash
 pip install .
 ```
 
-There are several dependencies to consider, depending on your specific usage:
+There are several dependencies to consider, depending on your specific usage (also works with `pip install fastrag[*]` package):
 
 ```bash
 # Additional engines/components
@@ -121,9 +131,6 @@ pip install .[qdrant]              # Support for Qdrant store
 pip install .[colbert]             # Support for ColBERT+PLAID; requires FAISS
 pip install .[faiss-cpu]           # CPU-based Faiss library
 pip install .[faiss-gpu]           # GPU-based Faiss library
-
-# Benchmarking
-pip install .[benchmark]
 
 # Development tools
 pip install .[dev]

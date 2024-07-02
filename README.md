@@ -7,7 +7,8 @@
     <p>Build and explore efficient retrieval-augmented generative models and applications</p>
 </h4>
 
-![PyPI - Version](https://img.shields.io/pypi/v/fastrag) ![PyPI - Downloads](https://img.shields.io/pypi/dm/fastrag)
+![PyPI - Version](https://img.shields.io/pypi/v/fastrag)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/fastrag)
 
 :round_pushpin: <a href="#round_pushpin-installation">Installation</a> • :rocket: <a href="components.md">Components</a> • :books: <a href="examples.md">Examples</a> • :red_car: <a href="getting_started.md">Getting Started</a> • :pill: <a href="Demo.md">Demos</a> • :pencil2: <a href="scripts/README.md">Scripts</a> • :bar_chart: <a href="benchmarks/README.md">Benchmarks</a>
 

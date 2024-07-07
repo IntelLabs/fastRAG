@@ -109,30 +109,33 @@ Preliminary requirements:
 
 To set up the software, install from `pip` or clone the project for the bleeding-edge updates. Run the following, preferably in a newly created virtual environment:
 
-via `pip` pypi:
-
 ```bash
 pip install fastrag
 ```
 
-or from a local clone:
+### Extra Packages
+
+There are additional dependencies that you can install based on your specific usage of fastRAG:
+
+```bash
+# Additional engines/components
+pip install fastrag[intel]               # Intel optimized backend [Optimum-intel, IPEX]
+pip install fastrag[elastic]             # Support for ElasticSearch store
+pip install fastrag[qdrant]              # Support for Qdrant store
+pip install fastrag[colbert]             # Support for ColBERT+PLAID; requires FAISS
+pip install fastrag[faiss-cpu]           # CPU-based Faiss library
+pip install fastrag[faiss-gpu]           # GPU-based Faiss library
+```
+
+To work with the latest version of fastRAG, you can install it using the following command:
 
 ```bash
 pip install .
 ```
 
-There are several dependencies to consider, depending on your specific usage (also works with `pip install fastrag[*]` package):
+### Development tools
 
 ```bash
-# Additional engines/components
-pip install .[intel]               # Intel optimized backend [Optimum-intel, IPEX]
-pip install .[elastic]             # Support for ElasticSearch store
-pip install .[qdrant]              # Support for Qdrant store
-pip install .[colbert]             # Support for ColBERT+PLAID; requires FAISS
-pip install .[faiss-cpu]           # CPU-based Faiss library
-pip install .[faiss-gpu]           # GPU-based Faiss library
-
-# Development tools
 pip install .[dev]
 ```
 

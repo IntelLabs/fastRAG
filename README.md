@@ -120,6 +120,7 @@ There are additional dependencies that you can install based on your specific us
 ```bash
 # Additional engines/components
 pip install fastrag[intel]               # Intel optimized backend [Optimum-intel, IPEX]
+pip install fastrag[openvino]            # Intel optimized backend using OpenVINO
 pip install fastrag[elastic]             # Support for ElasticSearch store
 pip install fastrag[qdrant]              # Support for Qdrant store
 pip install fastrag[colbert]             # Support for ColBERT+PLAID; requires FAISS

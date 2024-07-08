@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from haystack.components.embedders import (
     SentenceTransformersDocumentEmbedder,
@@ -27,6 +27,8 @@ class _IPEXSentenceTransformersEmbeddingBackend(_SentenceTransformersEmbeddingBa
         device: Optional[str] = None,
         auth_token: Optional[Secret] = None,
         trust_remote_code: bool = False,
+        max_seq_length: Optional[int] = None,
+        padding: Optional[bool] = True,
     ):
         import sentence_transformers
 
@@ -38,6 +40,46 @@ class _IPEXSentenceTransformersEmbeddingBackend(_SentenceTransformersEmbeddingBa
                     model_name_or_path, config=config, cache_dir=cache_dir, **model_args
                 )
                 self.auto_model.eval()
+
+            def tokenize(self, texts: Union[List[str], List[Dict], List[Tuple[str, str]]]):
+                """
+                Override of original st.models.Transformer 'Tokenizes' method to add fixed length tokenization.
+                """
+                output = {}
+                if isinstance(texts[0], str):
+                    to_tokenize = [texts]
+                elif isinstance(texts[0], dict):
+                    to_tokenize = []
+                    output["text_keys"] = []
+                    for lookup in texts:
+                        text_key, text = next(iter(lookup.items()))
+                        to_tokenize.append(text)
+                        output["text_keys"].append(text_key)
+                    to_tokenize = [to_tokenize]
+                else:
+                    batch1, batch2 = [], []
+                    for text_tuple in texts:
+                        batch1.append(text_tuple[0])
+                        batch2.append(text_tuple[1])
+                    to_tokenize = [batch1, batch2]
+
+                # strip
+                to_tokenize = [[str(s).strip() for s in col] for col in to_tokenize]
+
+                # Lowercase
+                if self.do_lower_case:
+                    to_tokenize = [[s.lower() for s in col] for col in to_tokenize]
+
+                output.update(
+                    self.tokenizer(
+                        *to_tokenize,
+                        padding=self.padding,
+                        truncation=True,
+                        return_tensors="pt",
+                        max_length=self.max_seq_length,
+                    )
+                )
+                return output
 
         class _IPEXSentenceTransformer(sentence_transformers.SentenceTransformer):
             def _load_auto_model(
@@ -81,6 +123,10 @@ class _IPEXSentenceTransformersEmbeddingBackend(_SentenceTransformersEmbeddingBa
             trust_remote_code=trust_remote_code,
         )
 
+        if max_seq_length is not None:
+            self.model._first_module().max_seq_length = max_seq_length
+        self.model._first_module().padding = padding
+
 
 def ipex_model_warm_up(self):
     """
@@ -91,31 +137,51 @@ def ipex_model_warm_up(self):
             model=self.model,
             device=self.device.to_torch_str(),
             auth_token=self.token,
+            max_seq_length=self.max_seq_length,
+            padding=self.padding,
         )
 
 
 class IPEXSentenceTransformersDocumentEmbedder(SentenceTransformersDocumentEmbedder):
     """
-    A document embedder that uses IPEX for efficient computation.
+    A document embedder that uses IPEX backend for efficient computation.
 
     This class extends the base `SentenceTransformersDocumentEmbedder` class and provides an implementation
     that utilizes IPEX for faster document embedding computation.
+
+    Parameters:
+        max_seq_length (int, optional): The maximum sequence length of the input documents. Defaults to None.
+        padding (bool or str, optional): Whether to pad the input documents to the maximum sequence length.
+            If True, padding is enabled. If False, padding is disabled. If "max_length", padding is enabled
+            and the input documents are padded to the maximum sequence length. Defaults to True.
+        **kwargs: Additional keyword arguments to be passed to the base class constructor.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, max_seq_length=None, padding=True, **kwargs):
         super().__init__(**kwargs)
+        self.max_seq_length = max_seq_length
+        self.padding = padding
 
 
 class IPEXSentenceTransformersTextEmbedder(SentenceTransformersTextEmbedder):
     """
-    A text embedder that uses IPEX for efficient text embedding.
+    A text embedder that uses IPEX backend for efficient text embedding.
 
     This class extends the `SentenceTransformersTextEmbedder` class and provides
     an implementation that utilizes IPEX for faster and more efficient text embedding.
+
+    Parameters:
+        max_seq_length (int, optional): The maximum sequence length of the input text. Defaults to None.
+        padding (bool or str, optional): Whether to pad the input documents to the maximum sequence length.
+            If True, padding is enabled. If False, padding is disabled. If "max_length", padding is enabled
+            and the input documents are padded to the maximum sequence length. Defaults to True.
+        **kwargs: Additional keyword arguments to be passed to the parent class.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, max_seq_length=None, padding=True, **kwargs):
         super().__init__(**kwargs)
+        self.max_seq_length = max_seq_length
+        self.padding = padding
 
 
 IPEXSentenceTransformersDocumentEmbedder.warm_up = ipex_model_warm_up

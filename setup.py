@@ -30,7 +30,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/IntelLabs/fastRAG",
     license="Apache-2.0",
-    python_requires=">=3.8, <4",
+    python_requires=">=3.8, <3.12",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",

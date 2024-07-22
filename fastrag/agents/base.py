@@ -65,7 +65,6 @@ class Tool:
         query_handler: QueryHandler,  # create create generic query class
         index_handler: IndexingHandler = None,  # create create generic index class
         description: str = "",
-        output_variable: str = "results",
         logging_color: Color = Color.YELLOW,
     ):
         if re.search(r"\W", name):
@@ -79,7 +78,6 @@ class Tool:
         self.index_handler = index_handler
 
         self.description = description
-        self.output_variable = output_variable
         self.logging_color = logging_color
 
     def run(self, tool_input: str, params: Optional[dict] = None) -> str:

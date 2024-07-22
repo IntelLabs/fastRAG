@@ -12,7 +12,7 @@ class DocWithImageTool(Tool):
 
         result_dict = result["prompt_builder"]
         tool_result = result_dict["prompt"]
-        
+
         del result_dict["prompt"]
         additional_params = result_dict
         return tool_result, additional_params

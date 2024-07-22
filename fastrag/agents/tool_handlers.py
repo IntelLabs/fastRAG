@@ -103,7 +103,7 @@ class HaystackIndexingHandler(IndexingHandler):
         """
         Get the default output name of the pipeline.
         """
-        pipeline_outputs = self.pipeline.outputs()    
+        pipeline_outputs = self.pipeline.outputs()
         component_name = list(pipeline_outputs.keys())[0]
         output_name = list(pipeline_outputs[component_name].keys())[0]
         return f"{component_name}.{output_name}"

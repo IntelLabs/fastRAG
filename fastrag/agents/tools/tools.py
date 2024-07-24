@@ -11,13 +11,8 @@ class DocWithImageTool(Tool):
         result = self.query_handler.query(tool_input, params)
 
         result_dict = result["prompt_builder"]
-        text = result_dict["prompt"]
+        tool_result = result_dict["prompt"]
 
-        tool_result = f"""
-Success! I have found the image and text I need:
-{text}
-I will now use the image and text to answer the question.
-"""
         del result_dict["prompt"]
         additional_params = result_dict
         return tool_result, additional_params

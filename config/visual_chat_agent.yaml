@@ -21,5 +21,3 @@ tools:
     params:
       name: "docRetriever"
       description: 'useful for when you need to retrieve images and text to answer questions. Use the following format: {{ "input": [your tool input here ] }}.'
-      # description: 'useful for when you need to retrieve textual documents to answer questions. Use the following format: {{ "input": [tool input here ] }}. DO NOT WRITE A URL!'
-      output_variable: "documents"

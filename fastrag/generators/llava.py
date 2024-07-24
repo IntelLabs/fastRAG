@@ -108,7 +108,7 @@ class LlavaHFGenerator(HuggingFaceLocalGenerator):
         if "stopping_criteria" in self.generation_kwargs:
             self.stopping_criteria_list = self.generation_kwargs["stopping_criteria"]
             del self.generation_kwargs["stopping_criteria"]
-            
+
         self.processor = AutoProcessor.from_pretrained(model)
         self.image_token = "<image>"
 

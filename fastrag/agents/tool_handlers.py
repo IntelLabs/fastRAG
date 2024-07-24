@@ -64,7 +64,7 @@ class IndexingHandler:
 
 
 class HaystackIndexingHandler(IndexingHandler):
-    def __init__(self, document_store, indexing_function=None, create_pipeline=None):
+    def __init__(self, pipeline, document_store):
         """
         :param create_pipeline:
             A function that creates the indexing pipeline. We create it to avoid problems with stale pipelines
@@ -72,34 +72,59 @@ class HaystackIndexingHandler(IndexingHandler):
         :param indexing_function:
             A function that indexes a given list of documents into the indexing pipeline.
         """
-        if create_pipeline:
-            self.create_pipeline = create_pipeline
-        self.indexing_function = (
-            indexing_function if indexing_function else self.default_indexing_function
-        )
+        self.pipeline = pipeline
         self.document_store = document_store
+        self.add_document_writer_to_pipeline()
+
+    def get_index_params(self, docs):
+        """
+        Create the default indexing params of the pipeline, by inserting the docs into all mandatory fields.
+        """
+        pipe_inputs = self.pipeline.inputs()
+        param_dict = {}
+        for inp_node_name, inp_node_params in pipe_inputs.items():
+            for param_name, param_values in inp_node_params.items():
+                if param_values["is_mandatory"]:
+                    if inp_node_name not in param_dict:
+                        param_dict[inp_node_name] = {}
+
+                    param_dict[inp_node_name][param_name] = docs
+
+        return param_dict
 
     def index(self, docs):
-        pipeline = self.create_pipeline()
-        self.indexing_function(pipeline, self.document_store, docs)
+        """
+        Index the given documents into the pipeline.
+        """
+        index_params = self.get_index_params(docs)
+        self.pipeline.run(index_params)
 
-    def default_indexing_function(self, indexing_pipeline, document_store, documents):
-        indexing_pipeline.add_component(
-            instance=DocumentWriter(document_store=document_store), name="doc_writer"
+    def get_default_output(self):
+        """
+        Get the default output name of the pipeline.
+        """
+        pipeline_outputs = self.pipeline.outputs()
+        component_name = list(pipeline_outputs.keys())[0]
+        output_name = list(pipeline_outputs[component_name].keys())[0]
+        return f"{component_name}.{output_name}"
+
+    def add_document_writer_to_pipeline(self):
+        """
+        Add a DocumentWriter component to the pipeline.
+        """
+        pipeline_output_name = self.get_default_output()
+
+        self.pipeline.add_component(
+            instance=DocumentWriter(document_store=self.document_store), name="doc_writer"
         )
 
-        indexing_pipeline.connect("doc_embedder.documents", "doc_writer.documents")
-
-        indexing_pipeline.run({"doc_embedder": {"documents": documents}})
+        self.pipeline.connect(pipeline_output_name, "doc_writer.documents")
 
 
 class HaystackFileIndexingHandler(HaystackIndexingHandler):
-    def __init__(self, pipeline_yaml_path, document_store, indexing_function=None):
-        super().__init__(document_store, indexing_function)
-        self.pipeline_yaml = load_text(pipeline_yaml_path)
-
-    def create_pipeline(self):
-        return Pipeline.loads(self.pipeline_yaml)
+    def __init__(self, pipeline_yaml_path, document_store):
+        pipeline = Pipeline.loads(load_text(pipeline_yaml_path))
+        super().__init__(pipeline, document_store)
 
 
 QUERY_HANDLER_FACTORY = {

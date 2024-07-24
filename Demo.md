@@ -47,7 +47,6 @@ tools:
     params:
       name: "docRetriever"
       description: 'useful for when you need to retrieve text to answer questions. Use the following format: {{ "input": [your tool input here ] }}.'
-      output_variable: "documents"
 ```
 
 Then, run the application using the command:

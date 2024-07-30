@@ -138,7 +138,7 @@ def get_basic_conversation_pipeline(args):
 
             tools_objects_map[tool_name] = tool_obj
 
-    system_tools = []
+    all_system_tools = []
     if "system_tools" in conversation_config:
         system_tools = conversation_config["system_tools"]
         for tool_config in system_tools:
@@ -149,10 +149,10 @@ def get_basic_conversation_pipeline(args):
                 tool_provider_map=tools_objects_map,
                 **tool_config["params"],
             )
-            system_tools.append(tool_obj)
+            all_system_tools.append(tool_obj)
     
     tools = list(tools_objects_map.values())
-    return generator, tools, system_tools
+    return generator, tools, all_system_tools
 
 
 def get_agent_conversation_pipeline(args):

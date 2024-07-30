@@ -1,13 +1,9 @@
-import logging
-
 import torch
 import yaml
-from haystack.components.generators.hugging_face_local import HuggingFaceLocalGenerator
 from transformers import AutoTokenizer, StoppingCriteriaList
 
 from fastrag.agents.base import Agent, ToolsManager
 from fastrag.agents.memory.conversation_memory import ConversationMemory
-from fastrag.agents.tool_handlers import INDEX_HANDLER_FACTORY, QUERY_HANDLER_FACTORY
 from fastrag.agents.tools.tools import TOOLS_FACTORY
 from fastrag.generators.stopping_criteria.stop_words import StopWordsByTextCriteria
 
@@ -128,40 +124,39 @@ def get_basic_conversation_pipeline(args):
             conversation_config["chat_model"]["generator_kwargs"]["model"]
         )
 
-    tools_objects = []
+    tools_objects_map = {}
+    
     if "tools" in conversation_config:
         tools = conversation_config["tools"]
         for tool_config in tools:
             tool_type = tool_config["type"]
             tool_type_class = TOOLS_FACTORY[tool_type]
-
-            tool_params = tool_config["params"]
-
-            # Create QueryHandler
-            query_handler_type = QUERY_HANDLER_FACTORY[tool_config["query_handler"]["type"]]
-            query_handler = query_handler_type(**tool_config["query_handler"]["params"])
-
-            store = query_handler.get_store()
-
-            # Create IndexHandler
-            index_handler_type = INDEX_HANDLER_FACTORY[tool_config["index_handler"]["type"]]
-
+            tool_name = tool_config["params"]["name"]
             tool_obj = tool_type_class(
-                query_handler=query_handler,
-                index_handler=index_handler_type(
-                    document_store=store,
-                    **tool_config["index_handler"]["params"],
-                ),
-                **tool_params,
+                **tool_config["params"],
             )
 
-            tools_objects.append(tool_obj)
+            tools_objects_map[tool_name] = tool_obj
 
-    return generator, tools_objects
+    system_tools = []
+    if "system_tools" in conversation_config:
+        system_tools = conversation_config["system_tools"]
+        for tool_config in system_tools:
+            tool_type = tool_config["type"]
+            tool_type_class = TOOLS_FACTORY[tool_type]
+            
+            tool_obj = tool_type_class(
+                tool_provider_map=tools_objects_map,
+                **tool_config["params"],
+            )
+            system_tools.append(tool_obj)
+    
+    tools = list(tools_objects_map.values())
+    return generator, tools, system_tools
 
 
 def get_agent_conversation_pipeline(args):
-    generator, tools_objects = get_basic_conversation_pipeline(args)
+    generator, tools_objects, system_tools = get_basic_conversation_pipeline(args)
 
     tools_manager = ToolsManager(tools_objects)
 
@@ -172,4 +167,4 @@ def get_agent_conversation_pipeline(args):
         tools_manager=tools_manager,
     )
 
-    return conversational_agent
+    return conversational_agent, system_tools

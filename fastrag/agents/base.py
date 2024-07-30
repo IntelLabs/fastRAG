@@ -12,7 +12,6 @@ from transformers import TextStreamer
 
 from fastrag.agents.agent_step import AgentStep
 from fastrag.agents.memory.conversation_memory import ConversationMemory
-from fastrag.agents.tool_handlers import IndexingHandler, QueryHandler
 from fastrag.agents.utils import Color, clean_for_prompt, print_text, react_parameter_resolver
 
 logger = logging.getLogger(__name__)
@@ -51,8 +50,6 @@ class Tool:
     :param name: The name of the tool. The Agent uses this name to refer to the tool in the text the Agent generates.
         The name should be short, ideally one token, and a good description of what the tool can do, for example:
         "Calculator" or "Search". Use only letters (a-z, A-Z), digits (0-9) and underscores (_)."
-    :param query_handler: The query_handler to run when the tool queries information.
-    :param index_handler: The index_handler to run when the tool requires indexing additional data.
     :param description: A description of what the tool is useful for. The Agent uses this description to decide
         when to use which tool. For example, you can describe a tool for calculations by "useful for when you need to
 
@@ -62,8 +59,6 @@ class Tool:
     def __init__(
         self,
         name: str,
-        query_handler: QueryHandler,  # create create generic query class
-        index_handler: IndexingHandler = None,  # create create generic index class
         description: str = "",
         logging_color: Color = Color.YELLOW,
     ):
@@ -73,16 +68,11 @@ class Tool:
                 f"underscores (_)."
             )
         self.name = name
-
-        self.query_handler = query_handler
-        self.index_handler = index_handler
-
         self.description = description
         self.logging_color = logging_color
 
     def run(self, tool_input: str, params: Optional[dict] = None) -> str:
-        # We can only pass params to pipelines but not to nodes
-        return self.query_handler.query(query=tool_input)
+        raise NotImplementedError()
 
 
 class ToolsManager:

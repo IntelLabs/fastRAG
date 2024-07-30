@@ -10,14 +10,13 @@ chat_model:
   generator_class: fastrag.generators.llava.LlavaHFGenerator
 tools:
   - type: doc_with_image
-    query_handler:
-        type: "haystack_yaml"
-        params:
-            pipeline_yaml_path: "config/empty_retrieval_pipeline.yaml"
-    index_handler:
-        type: "haystack_yaml"
-        params:
-            pipeline_yaml_path: "config/empty_index_pipeline.yaml"
     params:
       name: "docRetriever"
       description: 'useful for when you need to retrieve images and text to answer questions. Use the following format: {{ "input": [your tool input here ] }}.'
+      pipeline_or_yaml_file: "config/empty_retrieval_pipeline.yaml"
+system_tools:
+  - type: doc_with_image_index_from_provider
+    params:
+      name: "docIndex"
+      pipeline_or_yaml_file: "config/empty_index_pipeline.yaml"
+      tool_provider_name: docRetriever

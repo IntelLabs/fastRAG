@@ -164,7 +164,7 @@ TASK_TYPES = {
 }
 
 def _run_validation(model, task, model_path):
-    tasks = mteb.get_tasks(task_type=TASK_TYPES[task], languages=["eng"])
+    tasks = mteb.get_tasks(task_types=TASK_TYPES[task], languages=["eng"])
     evaluation = MTEB(tasks=tasks)
     results = evaluation.run(
         model, overwrite_results=True, output_folder=model_path, eval_splits=["test"]

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import torch
 from datasets import Dataset, load_dataset
 from embedders import EmbedderModelMTEB
+import mteb
 from mteb import MTEB
 from neural_compressor.config import PostTrainingQuantConfig
 from optimum.intel import INCQuantizer, IPEXModel
@@ -157,9 +158,14 @@ results_fn = {
     "retrieval": _gather_retrieval_results,
 }
 
+TASK_TYPES = {
+    "rerank": "Reranking",
+    "retrieval": "Retrieval"
+}
 
 def _run_validation(model, task, model_path):
-    evaluation = MTEB(tasks=benchmarks[task])
+    tasks = mteb.get_tasks(task_type=TASK_TYPES[task], languages=["eng"])
+    evaluation = MTEB(tasks=tasks)
     results = evaluation.run(
         model, overwrite_results=True, output_folder=model_path, eval_splits=["test"]
     )

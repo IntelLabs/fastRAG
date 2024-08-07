@@ -10,7 +10,6 @@ from mteb import MTEB
 from neural_compressor.config import PostTrainingQuantConfig
 from optimum.intel import INCQuantizer, IPEXModel
 from sentence_transformers import SentenceTransformer
-from simple_parsing import field
 from transformers import AutoModel, AutoTokenizer
 
 
@@ -125,10 +124,41 @@ benchmarks = {
     ],
     "retrieval": [
         "ArguAna",
-        # "ClimateFEVER",
-        # "FEVER",
-        # "FiQA2018",
-        # "HotpotQA",
+        "ClimateFEVER",
+        "CQADupstackAndroidRetrieval",
+        "CQADupstackEnglishRetrieval",
+        "CQADupstackGamingRetrieval",
+        "CQADupstackGisRetrieval",
+        "CQADupstackMathematicaRetrieval",
+        "CQADupstackPhysicsRetrieval",
+        "CQADupstackProgrammersRetrieval",
+        "CQADupstackStatsRetrieval",
+        "CQADupstackTexRetrieval",
+        "CQADupstackUnixRetrieval",
+        "CQADupstackWebmastersRetrieval",
+        "CQADupstackWordpressRetrieval",
+        "DBPedia",
+        "FaithDial",
+        "FeedbackQARetrieval",
+        "FEVER",
+        "FiQA2018",
+        "HagridRetrieval",
+        "HotpotQA",
+        "LegalBenchConsumerContractsQA",
+        "LegalBenchCorporateLobbying",
+        "LegalSummarization",
+        "MLQuestions",
+        "MSMARCO",
+        "NarrativeQARetrieval",
+        "NFCorpus",
+        "NQ",
+        "RARbCode",
+        "RARbMath",
+        "SCIDOCS",
+        "SciFact",
+        "TopiOCQA",
+        "Touche2020",
+        "TRECCOVID",
     ],
 }
 
@@ -137,8 +167,8 @@ def _gather_rerank_results(results):
     res = {}
     total = 0.0
     for task in results:
-        res[task] = results[task]["test"]["map"]
-        total += res[task]
+        res[task.task_name] = task.scores["test"][0]["map"]
+        total += res[task.task_name]
     res["avg"] = total / len(results)
     return res
 
@@ -147,7 +177,7 @@ def _gather_retrieval_results(results):
     res = {}
     total = 0.0
     for task in results:
-        res[task] = results[task]["test"]["ndcg_at_10"]
+        res[task.task_name] = task.scores["test"][0]["ndcg_at_10"]
         total += res[task]
     res["avg"] = total / len(results)
     return res
@@ -158,14 +188,8 @@ results_fn = {
     "retrieval": _gather_retrieval_results,
 }
 
-TASK_TYPES = {
-    "rerank": "Reranking",
-    "retrieval": "Retrieval"
-}
-
 def _run_validation(model, task, model_path):
-    tasks = mteb.get_tasks(task_types=TASK_TYPES[task], languages=["eng"])
-    evaluation = MTEB(tasks=tasks)
+    evaluation = MTEB(tasks=mteb.get_tasks(tasks=benchmarks[task]))
     results = evaluation.run(
         model, overwrite_results=True, output_folder=model_path, eval_splits=["test"]
     )

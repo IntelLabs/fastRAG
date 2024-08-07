@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import numpy as np
 import torch
@@ -115,6 +115,16 @@ class EmbedderModel:
 
 
 class EmbedderModelMTEB(EmbedderModel):
+    def encode(
+        self, sentences: list[str], batch_size=32, **kwargs: Any
+    ) -> torch.Tensor | np.ndarray:
+        return self.encode_sentences(
+            sentences=sentences,
+            batch_size=batch_size,
+            normalize=True,
+            convert_to_numpy=True,
+        )
+
     def encode_queries(self, queries: List[str], batch_size=32, **kwargs):
         if self.query_prompt:
             sentences = [self.query_prompt + q for q in queries]
@@ -133,9 +143,11 @@ class EmbedderModelMTEB(EmbedderModel):
         sep = " "
         if type(corpus[0]) is dict:
             sentences = [
-                (doc["title"].strip() + sep + doc["text"]).strip()
-                if "title" in doc
-                else doc["text"].strip()
+                (
+                    (doc["title"].strip() + sep + doc["text"]).strip()
+                    if "title" in doc
+                    else doc["text"].strip()
+                )
                 for doc in corpus
             ]
         else:

@@ -12,7 +12,6 @@ from transformers import TextStreamer
 
 from fastrag.agents.agent_step import AgentStep
 from fastrag.agents.memory.conversation_memory import ConversationMemory
-from fastrag.agents.tool_handlers import IndexingHandler, QueryHandler
 from fastrag.agents.utils import Color, clean_for_prompt, print_text, react_parameter_resolver
 
 logger = logging.getLogger(__name__)
@@ -51,8 +50,6 @@ class Tool:
     :param name: The name of the tool. The Agent uses this name to refer to the tool in the text the Agent generates.
         The name should be short, ideally one token, and a good description of what the tool can do, for example:
         "Calculator" or "Search". Use only letters (a-z, A-Z), digits (0-9) and underscores (_)."
-    :param query_handler: The query_handler to run when the tool queries information.
-    :param index_handler: The index_handler to run when the tool requires indexing additional data.
     :param description: A description of what the tool is useful for. The Agent uses this description to decide
         when to use which tool. For example, you can describe a tool for calculations by "useful for when you need to
 
@@ -62,8 +59,6 @@ class Tool:
     def __init__(
         self,
         name: str,
-        query_handler: QueryHandler,  # create create generic query class
-        index_handler: IndexingHandler = None,  # create create generic index class
         description: str = "",
         logging_color: Color = Color.YELLOW,
     ):
@@ -73,16 +68,11 @@ class Tool:
                 f"underscores (_)."
             )
         self.name = name
-
-        self.query_handler = query_handler
-        self.index_handler = index_handler
-
         self.description = description
         self.logging_color = logging_color
 
     def run(self, tool_input: str, params: Optional[dict] = None) -> str:
-        # We can only pass params to pipelines but not to nodes
-        return self.query_handler.query(query=tool_input)
+        raise NotImplementedError()
 
 
 class ToolsManager:
@@ -93,7 +83,7 @@ class ToolsManager:
     def __init__(
         self,
         tools: Optional[List[Tool]] = None,
-        tool_pattern: str = r"Tool:\s*(\w+)\s*Tool Input:\s*(?:\"([\s\S]*?)\"|((?:.|\n)*))\s*",
+        tool_pattern: str = r"Tool:\s*(\w+).*\s*Tool Input:\s*(?:\"([\s\S]*?)\"|((?:.|\n)*))\s*",
     ):
         """
         :param tools: A list of tools to add to the ToolManager. Each tool must have a unique name.
@@ -141,7 +131,8 @@ class ToolsManager:
 
                 # check if tool was already used:
                 if tool_input in self.tools_query_history[tool_name]:
-                    return """I have already used this Tool with this Tool Input, I will now use a DIFFERENT Tool and a different Tool Input."""
+                    # return """I have already used this Tool with this Tool Input, I will now use a DIFFERENT Tool and a different Tool Input."""
+                    return """I have already used this Tool with this Tool Input. I will use the information I already have to respond."""
                 else:
                     self.tools_query_history[tool_name][tool_input] = True
 
@@ -328,18 +319,20 @@ class Agent:
         """
         self.callback_manager.on_agent_start(name="Agent", query=query, params=params)
         agent_step = self.create_agent_step(max_steps)
+        first_call = True
         try:
             while not agent_step.is_last():
-                agent_step = self._step(query, agent_step, params)
+                agent_step = self._step(query, agent_step, params, first_call)
+                first_call = False
         finally:
             self.callback_manager.on_agent_finish(agent_step)
         final_answer = agent_step.final_answer(query=query)
         self.callback_manager.on_agent_final_answer(final_answer)
         return final_answer
 
-    def _step(self, query: str, current_step: AgentStep, params: Optional[dict] = None):
+    def _step(self, query: str, current_step: AgentStep, params: Optional[dict] = None, first_call=False):
         # plan next step using the LLM
-        generator_node_response = self._plan(query, current_step)
+        generator_node_response = self._plan(query, current_step, first_call)
 
         # from the LLM response, create the next step
         next_step = current_step.create_next_step(generator_node_response)
@@ -368,31 +361,40 @@ class Agent:
         if additional_params:
             memory_data["additional_params"] = additional_params
 
-        self.memory.save(data=memory_data)
+        self.memory.save(data=memory_data, first_call=first_call)
 
         # update the next step with the observation
         next_step.completed(observation)
         return next_step
 
-    def apply_params_to_template(self, template_params):
+    def apply_params_to_template(self, template_params, first_call):
         roles = template_params.pop("memory")
         if isinstance(self.prompt_template, dict):
             # separate system and user/assistant roles
-            all_roles = self.prompt_template["system"] + roles + self.prompt_template["chat"]
-            prompt_template = self.generator.pipeline.tokenizer.apply_chat_template(
-                all_roles, tokenize=False
-            )
+            all_roles = self.prompt_template["system"] + roles
+            if first_call:
+                all_roles += self.prompt_template["chat"]
+
+                prompt_template = self.generator.pipeline.tokenizer.apply_chat_template(
+                    all_roles, tokenize=False, add_generation_prompt=True
+                )
+            else:
+                new_assistant_text = all_roles[-1]["content"]
+                prompt_template = self.generator.pipeline.tokenizer.apply_chat_template(
+                    all_roles[:-1], tokenize=False, add_generation_prompt=True
+                ) + new_assistant_text
+
             prompt = prompt_template.format(**template_params)
         else:
             template_params["memory"] = self.generator.pipeline.tokenizer.apply_chat_template(
-                roles, tokenize=False
+                roles, tokenize=False, add_generation_prompt=True
             )
             prompt = self.prompt_template.format(**template_params)
 
         # prompt += "Thought: "
         return prompt
 
-    def _plan(self, query, current_step):
+    def _plan(self, query, current_step, first_call):
         # first resolve prompt template params
         template_params = self.prompt_parameters_resolver(
             query=query, agent=self, agent_step=current_step
@@ -401,7 +403,7 @@ class Agent:
 
         # invoke via prompt node
 
-        prompt = self.apply_params_to_template(template_params)
+        prompt = self.apply_params_to_template(template_params, first_call)
         generator_node_response = self.generator.run(prompt=prompt, **additional_params)
         generator_node_response = [clean_for_prompt(r) for r in generator_node_response["replies"]]
 

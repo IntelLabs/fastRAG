@@ -18,7 +18,7 @@ components:
     type: haystack.components.embedders.sentence_transformers_text_embedder.SentenceTransformersTextEmbedder
   prompt_builder:
     init_parameters:
-      template: "{% for document in documents %}\n    {{ document.content }}\n{% endfor %}"
+      template: "{% for document in documents %}\nImage: <|image_\nThis image shows: {{ document.content }} \n{% endfor %}"
     type: fastrag.prompt_builders.multi_modal_prompt_builder.MultiModalPromptBuilder
   retriever:
     init_parameters:

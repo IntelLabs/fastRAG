@@ -34,7 +34,10 @@ config = os.environ.get("CONFIG", "config/visual_chat_agent.yaml")
 
 args = argparse.Namespace(app_type="conversation", config=config)
 
-agent = get_agent_conversation_pipeline(args)
+# The agent is responsible for handling the conversation pipeline.
+# The system tools are responsible for handling the indexing of the input elements, such as images, text, etc.
+
+agent, system_tools = get_agent_conversation_pipeline(args)
 
 HaystackAgentCallbackHandler(agent)
 
@@ -69,26 +72,8 @@ async def main(message: cl.Message):
     global current_settings
 
     def parse_element(element, params):
-        # insert the image into the params
-        if "image" in element.mime:
-            img_str = base64.b64encode(element.content).decode("utf-8")
-            if "images" not in params:
-                params["images"] = []
-            params["images"].append(img_str)
-
-        # insert the text into the params
-        if "text" in element.mime:
-            file_text = element.content.decode("utf-8")
-            if "file_texts" not in params:
-                params["file_texts"] = []
-            params["file_texts"].append(file_text.split("\n"))
-
         if "json" in element.mime:
-            if "data_rows" not in params:
-                params["data_rows"] = []
-
-            data_rows = json.load(open(element.path, "r"))
-            params["data_rows"].append(data_rows)
+            params["docs"] = json.load(open(element.path, "r"))
 
     # params for the agent
     params = {}
@@ -99,26 +84,25 @@ async def main(message: cl.Message):
             parse_element(el, params)
 
         # Upload text and images, when appropriate
-        for tool_name in agent.tm.tools:
-            tool = agent.tm.tools[tool_name]
-            if hasattr(tool, "upload_data_to_pipeline"):
-                _ = await cl.Message(
-                    author="Agent", content=f"Uploading into {tool.name}..."
-                ).send()
-                tool.upload_data_to_pipeline(params)
+        for system_tool in system_tools:
+            _ = await cl.Message(
+                author="Agent", content=f"Uploading into {system_tool.name}..."
+            ).send()
+            system_tool.run(params)
 
-    agent_result = await cl.make_async(agent.run)(message.content)
-    answer = agent_result["answers"][0].answer
+    if message.content != "":
+        agent_result = await cl.make_async(agent.run)(message.content)
+        answer = agent_result["answers"][0].answer
 
-    # display retrieved image, if exists
-    additional_params = agent.memory.get_additional_params()
-    if "images" in additional_params and len(additional_params["images"]) > 0:
-        image_elements = add_images_to_message(additional_params)
+        # display retrieved image, if exists
+        additional_params = agent.memory.get_additional_params()
+        if "images" in additional_params and len(additional_params["images"]) > 0:
+            image_elements = add_images_to_message(additional_params)
 
-        _ = await cl.Message(
-            content="Here are the images I have found.", elements=image_elements
-        ).send()
-        remove_images(image_elements)
+            _ = await cl.Message(
+                content="Here are the images I have found.", elements=image_elements
+            ).send()
+            remove_images(image_elements)
 
-    # Send the agent answer
-    _ = await cl.Message(author="Agent", content=answer).send()
+        # Send the agent answer
+        _ = await cl.Message(author="Agent", content=answer).send()

@@ -1,13 +1,9 @@
-import logging
-
 import torch
 import yaml
-from haystack.components.generators.hugging_face_local import HuggingFaceLocalGenerator
 from transformers import AutoTokenizer, StoppingCriteriaList
 
 from fastrag.agents.base import Agent, ToolsManager
 from fastrag.agents.memory.conversation_memory import ConversationMemory
-from fastrag.agents.tool_handlers import INDEX_HANDLER_FACTORY, QUERY_HANDLER_FACTORY
 from fastrag.agents.tools.tools import TOOLS_FACTORY
 from fastrag.generators.stopping_criteria.stop_words import StopWordsByTextCriteria
 
@@ -26,40 +22,31 @@ You have access to the following tools:
 
 ## Output Format
 
-Please ALWAYS start with "Thought:".
-If you need to use a tool to get more information to answer the question, use the following format:
+If you lack information to answer, you MUST use a tool that can help you to get more information to answer the question, and use MUST use the following format:
 
 ```
-Thought: I need to use a tool to help me answer the question.
+Thought: I should use a tool to help me answer the question.
 Tool: [tool name if using a tool].
 Tool Input: [the input to the tool, in a JSON format representing the kwargs (e.g. {{"input": "hello world"}})].
 Observation: [tool response]
 ```
 
-Please use a valid JSON format for the Action Input.
-Please ALWAYS start with "Thought:".
-
-You should keep repeating the above format till you have enough information to answer the question without using any more tools.
-If you have enough information to answer the question without using any more tools, you MUST finish with "Final Answer: and respond in the one of the following two formats:
+If you have enough information to answer the question without using any more tools, you MUST finish with "Final Answer:" and respond in the following format:
 
 ```
 Thought: I can answer without using any more tools.
-Final Answer: [your answer here ]
+Final Answer: [your answer here]
 ```
 
-If you have enough information to answer the question without using any more tools, you MUST finish with "Final Answer:".
-
 """,
-    },
+    }
 ]
 
 AGENT_CONVERSATION_BASE_ROLES = [
-    {"role": "user", "content": " {query} "},
     {
-        "role": "assistant",
-        "content": """
-{transcript}
-""",
+        "role": "user",
+        "content": """{query}
+Thought: """,
     },
 ]
 
@@ -92,8 +79,10 @@ def get_generator(chat_model_config):
     generator_class = current_module
 
     tokenizer = AutoTokenizer.from_pretrained(chat_model_config["generator_kwargs"]["model"])
-    # stop_word_list = ["Observation:"]
-    stop_word_list = ["Observation:", "<|eot_id|>"]
+    if not tokenizer.pad_token:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    stop_word_list = ["Observation:", "<|eot_id|>", "<|end|>"]
     sw = StopWordsByTextCriteria(tokenizer=tokenizer, stop_words=stop_word_list, device="cpu")
 
     if "generation_kwargs" not in chat_model_config["generator_kwargs"]:
@@ -128,40 +117,39 @@ def get_basic_conversation_pipeline(args):
             conversation_config["chat_model"]["generator_kwargs"]["model"]
         )
 
-    tools_objects = []
+    tools_objects_map = {}
+
     if "tools" in conversation_config:
         tools = conversation_config["tools"]
         for tool_config in tools:
             tool_type = tool_config["type"]
             tool_type_class = TOOLS_FACTORY[tool_type]
-
-            tool_params = tool_config["params"]
-
-            # Create QueryHandler
-            query_handler_type = QUERY_HANDLER_FACTORY[tool_config["query_handler"]["type"]]
-            query_handler = query_handler_type(**tool_config["query_handler"]["params"])
-
-            store = query_handler.get_store()
-
-            # Create IndexHandler
-            index_handler_type = INDEX_HANDLER_FACTORY[tool_config["index_handler"]["type"]]
-
+            tool_name = tool_config["params"]["name"]
             tool_obj = tool_type_class(
-                query_handler=query_handler,
-                index_handler=index_handler_type(
-                    document_store=store,
-                    **tool_config["index_handler"]["params"],
-                ),
-                **tool_params,
+                **tool_config["params"],
             )
 
-            tools_objects.append(tool_obj)
+            tools_objects_map[tool_name] = tool_obj
 
-    return generator, tools_objects
+    all_system_tools = []
+    if "system_tools" in conversation_config:
+        system_tools = conversation_config["system_tools"]
+        for tool_config in system_tools:
+            tool_type = tool_config["type"]
+            tool_type_class = TOOLS_FACTORY[tool_type]
+
+            tool_obj = tool_type_class(
+                tool_provider_map=tools_objects_map,
+                **tool_config["params"],
+            )
+            all_system_tools.append(tool_obj)
+
+    tools = list(tools_objects_map.values())
+    return generator, tools, all_system_tools
 
 
 def get_agent_conversation_pipeline(args):
-    generator, tools_objects = get_basic_conversation_pipeline(args)
+    generator, tools_objects, system_tools = get_basic_conversation_pipeline(args)
 
     tools_manager = ToolsManager(tools_objects)
 
@@ -172,4 +160,4 @@ def get_agent_conversation_pipeline(args):
         tools_manager=tools_manager,
     )
 
-    return conversational_agent
+    return conversational_agent, system_tools

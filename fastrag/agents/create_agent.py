@@ -40,15 +40,14 @@ Final Answer: [your answer here]
 
 """,
     }
-
 ]
 
 AGENT_CONVERSATION_BASE_ROLES = [
     {
-        "role": "user", 
+        "role": "user",
         "content": """{query}
-Thought: """
-     },
+Thought: """,
+    },
 ]
 
 AGENT_ROLES = {"system": AGENT_SYSTEM_ROLES, "chat": AGENT_CONVERSATION_BASE_ROLES}
@@ -82,8 +81,7 @@ def get_generator(chat_model_config):
     tokenizer = AutoTokenizer.from_pretrained(chat_model_config["generator_kwargs"]["model"])
     if not tokenizer.pad_token:
         tokenizer.pad_token = tokenizer.eos_token
-        
-    
+
     stop_word_list = ["Observation:", "<|eot_id|>", "<|end|>"]
     sw = StopWordsByTextCriteria(tokenizer=tokenizer, stop_words=stop_word_list, device="cpu")
 
@@ -120,7 +118,7 @@ def get_basic_conversation_pipeline(args):
         )
 
     tools_objects_map = {}
-    
+
     if "tools" in conversation_config:
         tools = conversation_config["tools"]
         for tool_config in tools:
@@ -139,13 +137,13 @@ def get_basic_conversation_pipeline(args):
         for tool_config in system_tools:
             tool_type = tool_config["type"]
             tool_type_class = TOOLS_FACTORY[tool_type]
-            
+
             tool_obj = tool_type_class(
                 tool_provider_map=tools_objects_map,
                 **tool_config["params"],
             )
             all_system_tools.append(tool_obj)
-    
+
     tools = list(tools_objects_map.values())
     return generator, tools, all_system_tools
 

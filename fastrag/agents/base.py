@@ -330,7 +330,9 @@ class Agent:
         self.callback_manager.on_agent_final_answer(final_answer)
         return final_answer
 
-    def _step(self, query: str, current_step: AgentStep, params: Optional[dict] = None, first_call=False):
+    def _step(
+        self, query: str, current_step: AgentStep, params: Optional[dict] = None, first_call=False
+    ):
         # plan next step using the LLM
         generator_node_response = self._plan(query, current_step, first_call)
 
@@ -380,9 +382,12 @@ class Agent:
                 )
             else:
                 new_assistant_text = all_roles[-1]["content"]
-                prompt_template = self.generator.pipeline.tokenizer.apply_chat_template(
-                    all_roles[:-1], tokenize=False, add_generation_prompt=True
-                ) + new_assistant_text
+                prompt_template = (
+                    self.generator.pipeline.tokenizer.apply_chat_template(
+                        all_roles[:-1], tokenize=False, add_generation_prompt=True
+                    )
+                    + new_assistant_text
+                )
 
             prompt = prompt_template.format(**template_params)
         else:

@@ -1,15 +1,16 @@
-from argparse import Namespace
 import base64
 import logging
-from io import BytesIO
 import re
+from argparse import Namespace
+from io import BytesIO
 from typing import Any, Dict, List, Literal, Optional
 
+import torch
 from haystack import component
 from haystack.components.generators import HuggingFaceLocalGenerator, hugging_face_local
 from haystack.lazy_imports import LazyImport
 from haystack.utils import ComponentDevice, Secret
-from transformers import AutoProcessor, AutoTokenizer, TextStreamer, AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoProcessor, AutoTokenizer, TextStreamer
 
 # support for llava models
 hugging_face_local.SUPPORTED_TASKS.append("image-to-text")
@@ -160,14 +161,13 @@ class LlavaHFGenerator(HuggingFaceLocalGenerator):
                     [self.image_token for _ in range(image_token_count_diff)]
                 )
                 prompt = f"Current Images: {image_token_full_str}\n" + prompt
-                
+
             inputs = self.processor(prompt, raw_images, return_tensors="pt")
         else:
             inputs = self.processor(prompt, return_tensors="pt")
 
-        
         updated_generation_kwargs["max_length"] = updated_generation_kwargs.get("max_length", 32000)
-        
+
         output = self.pipeline.model.generate(
             **inputs, stopping_criteria=self.stopping_criteria_list, **updated_generation_kwargs
         )
@@ -302,11 +302,9 @@ class Phi35VisionHFGenerator(HuggingFaceLocalGenerator):
                 del self.generation_kwargs[gen_key]
 
         self.processor = AutoProcessor.from_pretrained(
-            pretrained_model_name_or_path=model, 
-            trust_remote_code=True, 
-            num_crops=4
-        ) 
-        self.image_token = "<|image_" # FULL is <|image_1|>\n
+            pretrained_model_name_or_path=model, trust_remote_code=True, num_crops=4
+        )
+        self.image_token = "<|image_"  # FULL is <|image_1|>\n
 
     def warm_up(self):
         """
@@ -318,10 +316,10 @@ class Phi35VisionHFGenerator(HuggingFaceLocalGenerator):
             for key in ["model", "device", "task"]:
                 if key in self.huggingface_pipeline_kwargs:
                     del self.huggingface_pipeline_kwargs[key]
-                    
+
             model = AutoModelForCausalLM.from_pretrained(
                 pretrained_model_name_or_path=self.pretrained_model_name_or_path,
-                **self.huggingface_pipeline_kwargs
+                **self.huggingface_pipeline_kwargs,
             )
             # for best performance, use num_crops=4 for multi-frame, num_crops=16 for single-frame.
             tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name_or_path)
@@ -331,23 +329,25 @@ class Phi35VisionHFGenerator(HuggingFaceLocalGenerator):
     def get_current_image_token(self, index):
         return f"{self.image_token}{index}|>\n"
 
-    def replace_matches_with_list(self, text, pattern=r"<\|image_", replace_match_template="<|image_{index}|>\n"):
+    def replace_matches_with_list(
+        self, text, pattern=r"<\|image_", replace_match_template="<|image_{index}|>\n"
+    ):
         # find matches
         matches = list(re.finditer(pattern, text))
-        
+
         # create ranges for the text ranges with and without the matches
         ranges = []
         init_index = 0
         for mm in matches:
             mm_span = mm.span()
             ranges.append((init_index, mm_span[0], 0))
-            ranges.append((mm_span[0],mm_span[1], 1))
+            ranges.append((mm_span[0], mm_span[1], 1))
             init_index = mm_span[1]
         ranges.append((init_index, len(text), 0))
-        
+
         # create the replacement texts
-        match_texts = [replace_match_template.format(index=i+1) for i in range(len(matches))]
-        
+        match_texts = [replace_match_template.format(index=i + 1) for i in range(len(matches))]
+
         # replace the matches with the replacement texts
         replace_index = 0
         full_text = ""
@@ -356,8 +356,13 @@ class Phi35VisionHFGenerator(HuggingFaceLocalGenerator):
                 full_text += match_texts[replace_index]
                 replace_index += 1
             else:
-                full_text += text[cur_range[0]:cur_range[1]]
+                full_text += text[cur_range[0] : cur_range[1]]
         return full_text
+
+    def assign_inputs(self, inputs):
+        if self.pipeline.model.device.type == "cuda" and torch.cuda.device_count() == 1:
+            inputs = inputs.to(self.pipeline.model.device)
+        return inputs
 
     @component.output_types(replies=List[str])
     def run(
@@ -403,17 +408,22 @@ class Phi35VisionHFGenerator(HuggingFaceLocalGenerator):
             # check if we need to add additional image tokens
             if image_token_count_diff > 0:
                 image_token_full_str = "".join(
-                    [self.get_current_image_token(i+1+present_image_token_count) for i in range(image_token_count_diff)]
+                    [
+                        self.get_current_image_token(i + 1 + present_image_token_count)
+                        for i in range(image_token_count_diff)
+                    ]
                 )
-                
+
                 prompt = f"{prompt}\n{image_token_full_str}\n"
-            
+
             inputs = self.processor(prompt, raw_images, return_tensors="pt")
         else:
             inputs = self.processor(prompt, return_tensors="pt")
-        
+
+        inputs = self.assign_inputs(inputs)
+
         updated_generation_kwargs["max_length"] = updated_generation_kwargs.get("max_length", 32000)
-        
+
         output = self.pipeline.model.generate(
             **inputs, stopping_criteria=self.stopping_criteria_list, **updated_generation_kwargs
         )

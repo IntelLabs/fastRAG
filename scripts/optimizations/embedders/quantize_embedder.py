@@ -2,10 +2,10 @@ import random
 from argparse import ArgumentParser
 from dataclasses import dataclass
 
+import mteb
 import torch
 from datasets import Dataset, load_dataset
 from embedders import EmbedderModelMTEB
-import mteb
 from mteb import MTEB
 from neural_compressor.config import PostTrainingQuantConfig
 from optimum.intel import INCQuantizer, IPEXModel
@@ -187,6 +187,7 @@ results_fn = {
     "rerank": _gather_rerank_results,
     "retrieval": _gather_retrieval_results,
 }
+
 
 def _run_validation(model, task, model_path):
     evaluation = MTEB(tasks=mteb.get_tasks(tasks=benchmarks[task]))

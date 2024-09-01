@@ -1,21 +1,23 @@
 import json
 from typing import Dict, List, Optional, Union
+
+from haystack import Document, Pipeline
 from haystack.components.writers import DocumentWriter
-from haystack import Document
 from tqdm import tqdm
-from fastrag.agents.utils import Color
+
 from fastrag.agents.base import Tool
-from haystack import Pipeline
-from fastrag.agents.utils import load_text
+from fastrag.agents.utils import Color, load_text
 
 COMPONENT_WITH_STORE = "retriever"
+
 
 class HaystackPipelineContainer:
     def load_pipeline(self, pipeline_or_yaml_file):
         if isinstance(pipeline_or_yaml_file, Pipeline):
             return pipeline_or_yaml_file
-        
+
         return Pipeline.loads(load_text(pipeline_or_yaml_file))
+
 
 class HaystackQueryTool(Tool, HaystackPipelineContainer):
     def __init__(
@@ -23,8 +25,8 @@ class HaystackQueryTool(Tool, HaystackPipelineContainer):
         name: str,
         description: str = "",
         logging_color: Color = Color.YELLOW,
-        pipeline_or_yaml_file = None, 
-        component_with_store=COMPONENT_WITH_STORE
+        pipeline_or_yaml_file=None,
+        component_with_store=COMPONENT_WITH_STORE,
     ):
         super().__init__(
             name=name,
@@ -63,23 +65,24 @@ class HaystackQueryTool(Tool, HaystackPipelineContainer):
         result_dict = result["prompt_builder"]
         return result_dict["prompt"]
 
+
 class DocWithImageHaystackQueryTool(HaystackQueryTool):
     def __init__(
         self,
         name: str,
         description: str = "",
         logging_color: Color = Color.YELLOW,
-        pipeline_or_yaml_file = None,
-        component_with_store=COMPONENT_WITH_STORE
+        pipeline_or_yaml_file=None,
+        component_with_store=COMPONENT_WITH_STORE,
     ):
         super().__init__(
             name=name,
             description=description,
             logging_color=logging_color,
             pipeline_or_yaml_file=pipeline_or_yaml_file,
-            component_with_store=component_with_store
+            component_with_store=component_with_store,
         )
-        
+
     def run(self, tool_input: str, params: Optional[dict] = None) -> str:
         result = self.query(tool_input, params)
 
@@ -90,14 +93,15 @@ class DocWithImageHaystackQueryTool(HaystackQueryTool):
         additional_params = result_dict
         return tool_result, additional_params
 
+
 class HaystackIndexTool(Tool, HaystackPipelineContainer):
     def __init__(
         self,
         name: str,
         description: str = "",
         logging_color: Color = Color.YELLOW,
-        pipeline_or_yaml_file = None,
-        document_store = None
+        pipeline_or_yaml_file=None,
+        document_store=None,
     ):
         super().__init__(
             name=name,
@@ -107,7 +111,6 @@ class HaystackIndexTool(Tool, HaystackPipelineContainer):
         self.pipeline = self.load_pipeline(pipeline_or_yaml_file)
         self.document_store = document_store
         self.add_document_writer_to_pipeline()
-
 
     def get_index_params(self, docs):
         """
@@ -154,10 +157,8 @@ class HaystackIndexTool(Tool, HaystackPipelineContainer):
         self.pipeline.connect(pipeline_output_name, "doc_writer.documents")
 
     def example_to_doc(self, ex):
-        return Document(
-            content=ex["content"], meta={"title": ex["title"]}
-        )  
-    
+        return Document(content=ex["content"], meta={"title": ex["title"]})
+
     def run(self, tool_input: Union[str, List[dict]], params: Optional[dict] = None) -> str:
         if isinstance(tool_input, str):
             tool_input = json.loads(tool_input)
@@ -165,11 +166,10 @@ class HaystackIndexTool(Tool, HaystackPipelineContainer):
         elif isinstance(tool_input, dict) and "docs" in tool_input:
             tool_input = tool_input["docs"]
 
-        docs = [
-            self.example_to_doc(ex) for ex in tqdm(tool_input)
-        ]
-        
+        docs = [self.example_to_doc(ex) for ex in tqdm(tool_input)]
+
         self.index(docs)
+
 
 class DocWithImageHaystackIndexTool(HaystackIndexTool):
     def __init__(
@@ -177,8 +177,8 @@ class DocWithImageHaystackIndexTool(HaystackIndexTool):
         name: str,
         description: str = "",
         logging_color: Color = Color.YELLOW,
-        pipeline_or_yaml_file = None,
-        document_store = None
+        pipeline_or_yaml_file=None,
+        document_store=None,
     ):
         super().__init__(
             name=name,
@@ -191,7 +191,8 @@ class DocWithImageHaystackIndexTool(HaystackIndexTool):
     def example_to_doc(self, ex):
         return Document(
             content=ex["content"], meta={"title": ex["title"], "image_url": ex["image_url"]}
-        )  
+        )
+
 
 class DocWithImageFromProvidersHaystackIndexTool(DocWithImageHaystackIndexTool):
     def __init__(
@@ -199,9 +200,9 @@ class DocWithImageFromProvidersHaystackIndexTool(DocWithImageHaystackIndexTool):
         name: str,
         description: str = "",
         logging_color: Color = Color.YELLOW,
-        pipeline_or_yaml_file = None,
+        pipeline_or_yaml_file=None,
         tool_provider_map: Dict[str, Tool] = None,
-        tool_provider_name: str = None
+        tool_provider_name: str = None,
     ):
         # get the store from the correct tool with the document store to use
         document_store = tool_provider_map[tool_provider_name].get_store()
@@ -212,11 +213,11 @@ class DocWithImageFromProvidersHaystackIndexTool(DocWithImageHaystackIndexTool):
             pipeline_or_yaml_file=pipeline_or_yaml_file,
             document_store=document_store,
         )
-    
+
 
 TOOLS_FACTORY = {
     "doc_with_image": DocWithImageHaystackQueryTool,
-    "doc_with_image_index": DocWithImageHaystackIndexTool, 
+    "doc_with_image_index": DocWithImageHaystackIndexTool,
     "doc_with_image_index_from_provider": DocWithImageFromProvidersHaystackIndexTool,
-    "doc": HaystackQueryTool
+    "doc": HaystackQueryTool,
 }

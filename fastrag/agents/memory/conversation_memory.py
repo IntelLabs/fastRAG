@@ -33,7 +33,7 @@ class ConversationMemory:
             - window_size: integer specifying the number of most recent conversation snippets to load.
         :return: A formatted string containing the conversation history.
         """
-        
+
         chat_list = self.list
 
         roles = []
@@ -41,11 +41,11 @@ class ConversationMemory:
             user_role = {"role": "user", "content": chat_snippet["Human"]}
 
             assistant_text = f"{chat_snippet['AI']}\n"
-            
+
             assistant_role = {"role": "assistant", "content": assistant_text}
 
             roles.extend([user_role, assistant_role])
-        
+
         return roles
 
     def save(self, data: Dict[str, Any], first_call=False) -> None:
@@ -55,9 +55,9 @@ class ConversationMemory:
         :param data: A dictionary containing the conversation snippet to save.
         """
         assistant_text = data[self.output_key]
-        if 'observation' in data and data['observation'] and data['observation'] != "None":
+        if "observation" in data and data["observation"] and data["observation"] != "None":
             assistant_text += f"\n{data['observation']}\n"
-        
+
         if first_call:
             # in the first call, add a new user - assistant pair
             chat_snippet = collections.OrderedDict()
@@ -74,12 +74,12 @@ class ConversationMemory:
 
             if data.get("additional_params", None):
                 if last_snippet.get("additional_params", None):
-                    for k,v in data["additional_params"].items():
+                    for k, v in data["additional_params"].items():
                         if k in last_snippet["additional_params"]:
                             last_snippet["additional_params"][k] += v
                 else:
                     last_snippet["additional_params"] = data["additional_params"]
-            
+
             self.list[-1] = last_snippet
 
     def get_additional_params(self):
@@ -92,7 +92,7 @@ class ConversationMemory:
                         params[key] = []
                     assert isinstance(additional_params[key], list)
                     params[key] += additional_params[key]
-                
+
         return params
 
     def clear(self) -> None:

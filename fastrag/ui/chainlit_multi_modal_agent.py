@@ -86,8 +86,7 @@ async def main(message: cl.Message):
         # Upload text and images, when appropriate
         for system_tool in system_tools:
             _ = await cl.Message(
-                author="Agent", 
-                content=f"Uploading into {system_tool.name}..."
+                author="Agent", content=f"Uploading into {system_tool.name}..."
             ).send()
             system_tool.run(params)
 

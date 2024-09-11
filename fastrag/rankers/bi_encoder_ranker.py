@@ -109,5 +109,9 @@ class BiEncoderSimilarityRanker:
         doc_vectors = torch.tensor([doc.embedding for doc in documents_with_vectors])
         scores = torch.tensor(query_vector) @ doc_vectors.T  ## perhaps need to break it into chunks
         scores = scores.reshape(len(documents))
+        # Store scores in documents_with_vectors
+        for doc, score in zip(documents_with_vectors, scores.tolist()):
+            doc.metadata["score"] = score
+
         indices = scores.cpu().sort(descending=True).indices
         return {"documents": [documents_with_vectors[i.item()] for i in indices[:top_k]]}

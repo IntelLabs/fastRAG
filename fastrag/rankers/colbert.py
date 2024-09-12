@@ -70,6 +70,8 @@ class ColBERTRanker:
         # however scores are different than when calculated at query time.
         # It's due to quantization differences when recovering the embeddings.
         scores = torch.einsum("bwd,qvd -> bqwv", query_emb, tensor * masks).max(-1).values.sum(-1)
+        for doc, score in zip(documents, scores.tolist()):
+            doc.score = score
 
         indices = scores.cpu().sort(descending=True).indices[0]
         return {"documents": [documents[i.item()] for i in indices[:top_k]]}

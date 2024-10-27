@@ -95,14 +95,29 @@ class OpenVINOGenerator(HuggingFaceLocalGenerator):
             huggingface_pipeline_kwargs=huggingface_pipeline_kwargs,
             stop_words=stop_words,
         )
+        self.model = model
+        self.compressed_model_dir = compressed_model_dir
+        self.device_openvino = device_openvino
+        self.ov_config = ov_config
+        self.compressed_model_dir = compressed_model_dir
 
-        ov_model = OVModelForCausalLM.from_pretrained(
-            compressed_model_dir,
-            device=device_openvino,
-            ov_config=ov_config,
-            config=AutoConfig.from_pretrained(compressed_model_dir, trust_remote_code=True),
-            trust_remote_code=True,
-        )
+    def warm_up(self):
+        """
+        Initializes the component.
+        """
+        if self.pipeline is None:
+            ov_model = OVModelForCausalLM.from_pretrained(
+                self.compressed_model_dir,
+                device=self.device_openvino,
+                ov_config=self.ov_config,
+                config=AutoConfig.from_pretrained(
+                    self.compressed_model_dir, trust_remote_code=True
+                ),
+                trust_remote_code=True,
+            )
 
-        self.huggingface_pipeline_kwargs["model"] = ov_model
-        self.huggingface_pipeline_kwargs["tokenizer"] = AutoTokenizer.from_pretrained(model)
+            self.huggingface_pipeline_kwargs["model"] = ov_model
+            self.huggingface_pipeline_kwargs["tokenizer"] = AutoTokenizer.from_pretrained(
+                self.model
+            )
+            super().warm_up()

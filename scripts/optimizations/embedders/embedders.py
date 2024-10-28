@@ -116,7 +116,7 @@ class EmbedderModel:
 
 class EmbedderModelMTEB(EmbedderModel):
     def encode(
-        self, sentences: list[str], batch_size=32, **kwargs: Any
+        self, sentences: List[str], batch_size=32, **kwargs: Any
     ) -> torch.Tensor | np.ndarray:
         return self.encode_sentences(
             sentences=sentences,

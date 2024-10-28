@@ -119,7 +119,7 @@ class LlavaHFGenerator(HuggingFaceLocalGenerator):
     def run(
         self,
         prompt: str,
-        images: list[str] = None,
+        images: List[str] = None,
         generation_kwargs: Optional[Dict[str, Any]] = None,
     ):
         """
@@ -368,7 +368,7 @@ class Phi35VisionHFGenerator(HuggingFaceLocalGenerator):
     def run(
         self,
         prompt: str,
-        images: list[str] = None,
+        images: List[str] = None,
         generation_kwargs: Optional[Dict[str, Any]] = None,
     ):
         """

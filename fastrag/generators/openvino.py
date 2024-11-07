@@ -1,6 +1,7 @@
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 from haystack.components.generators import HuggingFaceLocalGenerator
+from haystack.dataclasses import StreamingChunk
 from haystack.lazy_imports import LazyImport
 from haystack.utils import ComponentDevice, Secret
 from transformers import AutoConfig, AutoTokenizer
@@ -48,6 +49,7 @@ class OpenVINOGenerator(HuggingFaceLocalGenerator):
         generation_kwargs: Optional[Dict[str, Any]] = None,
         huggingface_pipeline_kwargs: Optional[Dict[str, Any]] = None,
         stop_words: Optional[List[str]] = None,
+        streaming_callback: Optional[Callable[[StreamingChunk], None]] = None,
     ):
         """
         Creates an instance of a OpenVINOGenerator.
@@ -84,6 +86,7 @@ class OpenVINOGenerator(HuggingFaceLocalGenerator):
             If you provide this parameter, you should not specify the `stopping_criteria` in `generation_kwargs`.
             For some chat models, the output includes both the new text and the original prompt.
             In these cases, it's important to make sure your prompt has no stop words.
+        :param streaming_callback: An optional callable for handling streaming responses.
         """
         ov_import.check()
         super().__init__(
@@ -94,6 +97,7 @@ class OpenVINOGenerator(HuggingFaceLocalGenerator):
             generation_kwargs=generation_kwargs,
             huggingface_pipeline_kwargs=huggingface_pipeline_kwargs,
             stop_words=stop_words,
+            streaming_callback=streaming_callback,
         )
         self.model = model
         self.compressed_model_dir = compressed_model_dir

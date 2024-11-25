@@ -1,6 +1,6 @@
-import torch
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import torch
 from haystack.components.embedders import (
     SentenceTransformersDocumentEmbedder,
     SentenceTransformersTextEmbedder,
@@ -104,10 +104,18 @@ class _IPEXSentenceTransformersEmbeddingBackend(_SentenceTransformersEmbeddingBa
                     "trust_remote_code": trust_remote_code,
                     "revision": revision,
                     "local_files_only": local_files_only,
-                }   
-                model_kwargs = shared_kwargs if model_kwargs is None else {**shared_kwargs, **model_kwargs}
-                tokenizer_kwargs = shared_kwargs if tokenizer_kwargs is None else {**shared_kwargs, **tokenizer_kwargs}
-                config_kwargs = shared_kwargs if config_kwargs is None else {**shared_kwargs, **config_kwargs}
+                }
+                model_kwargs = (
+                    shared_kwargs if model_kwargs is None else {**shared_kwargs, **model_kwargs}
+                )
+                tokenizer_kwargs = (
+                    shared_kwargs
+                    if tokenizer_kwargs is None
+                    else {**shared_kwargs, **tokenizer_kwargs}
+                )
+                config_kwargs = (
+                    shared_kwargs if config_kwargs is None else {**shared_kwargs, **config_kwargs}
+                )
 
                 transformer_model = _IPEXSTTransformers(
                     model_name_or_path,

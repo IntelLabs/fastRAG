@@ -50,7 +50,7 @@ def chat_end():
 
 def add_images_to_message(additional_params):
     image_elements = []
-    last_image = [additional_params["images"][-1]]
+    last_image = additional_params["images"]
     for image_base64_index, image_base64 in enumerate(last_image):
         image_uuid = str(uuid.uuid4())
         bytes_io = BytesIO(base64.b64decode(image_base64))
@@ -95,8 +95,8 @@ async def main(message: cl.Message):
         answer = agent_result["answers"][0].answer
 
         # display retrieved image, if exists
-        additional_params = agent.memory.get_additional_params()
-        if "images" in additional_params and len(additional_params["images"]) > 0:
+        additional_params = agent.memory.list.get("additional_params", None)
+        if additional_params and "images" in additional_params and len(additional_params["images"]) > 0:
             image_elements = add_images_to_message(additional_params)
 
             _ = await cl.Message(

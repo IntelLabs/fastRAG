@@ -1,6 +1,6 @@
 chat_model:
   generator_kwargs:
-      model: microsoft/Phi-3.5-vision-instruct
+      model: meta-llama/Llama-3.2-11B-Vision-Instruct
       task: "image-to-text"
       generation_kwargs:
         max_new_tokens: 300
@@ -8,14 +8,13 @@ chat_model:
       huggingface_pipeline_kwargs:
         torch_dtype: torch.bfloat16
         trust_remote_code: true
-        _attn_implementation: eager
-  generator_class: fastrag.generators.llava.Phi35VisionHFGenerator
+  generator_class: fastrag.generators.llava.LlamaHFGenerator
 tools:
   - type: doc_with_image
     params:
       name: "docRetriever"
       description: 'useful for when you need to retrieve images and text to answer questions. Use the following format: {{ "input": [your tool input here ] }}.'
-      pipeline_or_yaml_file: "config/empty_retrieval_pipeline.yaml"
+      pipeline_or_yaml_file: "config/empty_ret_llama_32.yaml"
 system_tools:
   - type: doc_with_image_index_from_provider
     params:

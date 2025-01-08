@@ -9,7 +9,6 @@ import chainlit as cl
 from chainlit_agent_fastrag_callback import HaystackAgentCallbackHandler
 
 from fastrag.agents.create_agent import get_agent_conversation_pipeline
-from fastrag.generators.image_caption_generator import GitImageCaptionGenerator
 
 # Path to pipeline configuration (yaml).
 # An example for a YAML config file is formatted as follows:
@@ -42,7 +41,6 @@ agent, system_tools = get_agent_conversation_pipeline(args)
 
 HaystackAgentCallbackHandler(agent)
 
-image_caption_generator = None
 
 @cl.on_chat_end
 def chat_end():
@@ -74,7 +72,6 @@ async def main(message: cl.Message):
     global current_settings
 
     def parse_element(element, params):
-        global image_caption_generator
         
         if "json" in element.mime:
             params["docs"] = json.load(open(element.path, "r"))
@@ -83,14 +80,8 @@ async def main(message: cl.Message):
             if "docs" not in params:
                 params["docs"] = []
             
-            if image_caption_generator is None:
-                image_caption_generator = GitImageCaptionGenerator()
-            
-            caption = image_caption_generator.caption(element.path)
             image_element = {
-                "image_url": element.path,
-                "title": caption,
-                "content": caption,
+                "content": element.path,
             }
             
             params["docs"].append(image_element)

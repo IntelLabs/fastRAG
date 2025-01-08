@@ -82,7 +82,7 @@ def get_generator(chat_model_config):
     if not tokenizer.pad_token:
         tokenizer.pad_token = tokenizer.eos_token
 
-    stop_word_list = ["Observation:", "<|eot_id|>", "<|end|>"]
+    stop_word_list = ["Tool Output", "Observation:", "<|eot_id|>", "<|end|>"]
     sw = StopWordsByTextCriteria(tokenizer=tokenizer, stop_words=stop_word_list, device="cpu")
 
     if "generation_kwargs" not in chat_model_config["generator_kwargs"]:

@@ -1,0 +1,58 @@
+components:
+  prompt_builder:
+    init_parameters:
+      required_variables: null
+      template: "{% for document in documents %}\nImage: <|image_\nThis image is relevant to the question. \n{% endfor %}"
+      variables: null
+    type: fastrag.prompt_builders.multi_modal_prompt_builder.MultiModalPromptBuilder
+  retriever:
+    init_parameters:
+      document_store:
+        init_parameters:
+          bm25_algorithm: BM25L
+          bm25_parameters: {}
+          bm25_tokenization_regex: (?u)\b\w\w+\b
+          embedding_similarity_function: dot_product
+          index: fd8404e2-143c-4b33-9842-34aa23026912
+        type: haystack.document_stores.in_memory.document_store.InMemoryDocumentStore
+      filter_policy: replace
+      filters: null
+      return_embedding: false
+      scale_score: false
+      top_k: 1
+    type: haystack.components.retrievers.in_memory.embedding_retriever.InMemoryEmbeddingRetriever
+  text_embedder:
+    init_parameters:
+      batch_size: 32
+      config_kwargs: null
+      device:
+        device: cpu
+        type: single
+      embedding_separator: '
+
+        '
+      meta_fields_to_embed: []
+      model: openai/clip-vit-large-patch14
+      model_kwargs: null
+      normalize_embeddings: false
+      precision: float32
+      prefix: ''
+      progress_bar: true
+      suffix: ''
+      token:
+        env_vars:
+        - HF_API_TOKEN
+        - HF_TOKEN
+        strict: false
+        type: env_var
+      tokenizer_kwargs: null
+      truncate_dim: null
+      trust_remote_code: false
+    type: fastrag.embedders.image_embedders.SentenceTransformersImageTextEmbedder
+connections:
+- receiver: retriever.query_embedding
+  sender: text_embedder.embedding
+- receiver: prompt_builder.documents
+  sender: retriever.documents
+max_runs_per_component: 100
+metadata: {}

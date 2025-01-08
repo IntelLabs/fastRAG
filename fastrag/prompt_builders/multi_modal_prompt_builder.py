@@ -31,8 +31,15 @@ class MultiModalPromptBuilder(PromptBuilder):
             - `prompt`: The updated prompt text after rendering the prompt template.
         """
         prompt_dict = {"prompt": self.template.render(kwargs)}
+
+        first_doc = kwargs["documents"][0]
+        if "image_url" not in first_doc.meta:
+            get_image_url = lambda doc: doc.content
+        else:
+            get_image_url = lambda doc: doc.meta["image_url"]
+
         prompt_dict["images"] = [
-            self.get_base64_from_url(doc.meta["image_url"]) for doc in kwargs["documents"]
+            self.get_base64_from_url(get_image_url(doc)) for doc in kwargs["documents"]
         ]
 
         return prompt_dict
@@ -47,7 +54,7 @@ class MultiModalPromptBuilder(PromptBuilder):
             )
             buffered = BytesIO(response.content)
             img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-        elif image_url.startswith("/"):
+        else:
             with open(image_url, "rb") as image_file:
                 img_str = base64.b64encode(image_file.read())
                 

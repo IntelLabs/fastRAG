@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 from fastrag.agents.base import Tool
 from fastrag.agents.utils import Color, load_text
+from fastrag.embedders.image_embedders import SentenceTransformersImageEmbedder
 
 COMPONENT_WITH_STORE = "retriever"
 
@@ -193,7 +194,39 @@ class DocWithImageHaystackIndexTool(HaystackIndexTool):
             content=ex["content"], meta={"title": ex["title"], "image_url": ex["image_url"]}
         )
 
+class ImageHaystackIndexTool(Tool):
+    def __init__(
+        self,
+        name: str,
+        description: str = "",
+        logging_color: Color = Color.YELLOW,
+        model_name_or_path=None,
+        tool_provider_map: Dict[str, Tool] = None,
+        tool_provider_name: str = None,
+    ):
+        # get the store from the correct tool with the document store to use
+        document_store = tool_provider_map[tool_provider_name].get_store()
+        super().__init__(
+            name=name,
+            description=description,
+            logging_color=logging_color,
+        )
+        self.doc_embedder = SentenceTransformersImageEmbedder(model=model_name_or_path)
+        self.doc_embedder.warm_up()
 
+        self.document_store = document_store
+
+    def run(self, tool_input: Union[str, List[dict]], params: Optional[dict] = None) -> str:
+        if isinstance(tool_input, str):
+            tool_input = json.loads(tool_input)
+
+        elif isinstance(tool_input, dict) and "docs" in tool_input:
+            tool_input = tool_input["docs"]
+
+        docs = [Document(content=element["content"]) for element in tool_input]
+        docs_with_embeddings = self.doc_embedder.run(docs)
+        self.document_store.write_documents(docs_with_embeddings["documents"])
+    
 class DocWithImageFromProvidersHaystackIndexTool(DocWithImageHaystackIndexTool):
     def __init__(
         self,
@@ -220,4 +253,5 @@ TOOLS_FACTORY = {
     "doc_with_image_index": DocWithImageHaystackIndexTool,
     "doc_with_image_index_from_provider": DocWithImageFromProvidersHaystackIndexTool,
     "doc": HaystackQueryTool,
+    "image": ImageHaystackIndexTool
 }

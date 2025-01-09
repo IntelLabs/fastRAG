@@ -425,4 +425,3 @@ class Agent:
     def clear(self):
         self.memory.clear()
         self.tm.clear_tool_history()
-

@@ -1,6 +1,8 @@
 import base64
 from io import BytesIO
+
 import requests
+
 
 def get_base64_from_url(image_url):
     if image_url.startswith("http"):
@@ -15,5 +17,5 @@ def get_base64_from_url(image_url):
     else:
         with open(image_url, "rb") as image_file:
             img_str = base64.b64encode(image_file.read())
-            
+
     return img_str

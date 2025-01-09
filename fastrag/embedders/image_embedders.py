@@ -1,16 +1,21 @@
 import base64
 from io import BytesIO
-from haystack.components.embedders import SentenceTransformersDocumentEmbedder, SentenceTransformersTextEmbedder
-import torch
 from typing import List
+
+import torch
 from haystack import Document, component
+from haystack.components.embedders import (
+    SentenceTransformersDocumentEmbedder,
+    SentenceTransformersTextEmbedder,
+)
 from PIL import Image
-from transformers import CLIPProcessor, CLIPModel
+from transformers import CLIPModel, CLIPProcessor
 
 
 def base64_to_image(base_64_input):
     bytes_io = BytesIO(base64.b64decode(base_64_input))
     return Image.open(bytes_io)
+
 
 class BaseSentenceTransformersImageEmbedder(SentenceTransformersDocumentEmbedder):
     def warm_up(self):
@@ -18,14 +23,15 @@ class BaseSentenceTransformersImageEmbedder(SentenceTransformersDocumentEmbedder
         Initializes the component.
         """
 
-        #Load CLIP model
+        # Load CLIP model
         self.embeding_backend = CLIPModel.from_pretrained(self.model)
         self.processor = CLIPProcessor.from_pretrained(self.model)
 
-        # self.embeding_backend = SentenceTransformer(self.model)
 
 @component
-class SentenceTransformersImageEmbedder(BaseSentenceTransformersImageEmbedder, SentenceTransformersDocumentEmbedder):
+class SentenceTransformersImageEmbedder(
+    BaseSentenceTransformersImageEmbedder, SentenceTransformersDocumentEmbedder
+):
     @component.output_types(documents=List[Document])
     def run(self, documents: List[Document]):
         images = [base64_to_image(doc.meta["image_base64"]) for doc in documents]
@@ -40,8 +46,9 @@ class SentenceTransformersImageEmbedder(BaseSentenceTransformersImageEmbedder, S
 
 
 @component
-class SentenceTransformersImageTextEmbedder(BaseSentenceTransformersImageEmbedder,SentenceTransformersTextEmbedder):
-    
+class SentenceTransformersImageTextEmbedder(
+    BaseSentenceTransformersImageEmbedder, SentenceTransformersTextEmbedder
+):
     @component.output_types(embedding=List[float])
     def run(self, text: str):
         """
@@ -57,5 +64,5 @@ class SentenceTransformersImageTextEmbedder(BaseSentenceTransformersImageEmbedde
         inputs = self.processor(text=text, return_tensors="pt", padding=True)
         with torch.no_grad():
             text_outputs = self.embeding_backend.get_text_features(**inputs)
-        
+
         return {"embedding": text_outputs.tolist()[0]}

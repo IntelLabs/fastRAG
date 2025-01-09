@@ -192,13 +192,14 @@ class DocWithImageHaystackIndexTool(HaystackIndexTool):
 
     def example_to_doc(self, ex):
         return Document(
-            content=ex["content"], 
+            content=ex["content"],
             meta={
-                "title": ex["title"], 
+                "title": ex["title"],
                 "image_url": ex["image_url"],
-                "image_base64": get_base64_from_url(ex["image_url"])
-            }
+                "image_base64": get_base64_from_url(ex["image_url"]),
+            },
         )
+
 
 class ImageHaystackIndexTool(Tool):
     def __init__(
@@ -229,10 +230,17 @@ class ImageHaystackIndexTool(Tool):
         elif isinstance(tool_input, dict) and "docs" in tool_input:
             tool_input = tool_input["docs"]
 
-        docs = [Document(content=element["content"], meta=dict(image_base64 = get_base64_from_url(element["content"]))) for element in tool_input]
+        docs = [
+            Document(
+                content=element["content"],
+                meta=dict(image_base64=get_base64_from_url(element["content"])),
+            )
+            for element in tool_input
+        ]
         docs_with_embeddings = self.doc_embedder.run(docs)
         self.document_store.write_documents(docs_with_embeddings["documents"])
-    
+
+
 class DocWithImageFromProvidersHaystackIndexTool(DocWithImageHaystackIndexTool):
     def __init__(
         self,
@@ -259,5 +267,5 @@ TOOLS_FACTORY = {
     "doc_with_image_index": DocWithImageHaystackIndexTool,
     "doc_with_image_index_from_provider": DocWithImageFromProvidersHaystackIndexTool,
     "doc": HaystackQueryTool,
-    "image": ImageHaystackIndexTool
+    "image": ImageHaystackIndexTool,
 }

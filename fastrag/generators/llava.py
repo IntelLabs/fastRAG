@@ -23,6 +23,7 @@ def base64_to_image(base_64_input):
     bytes_io = BytesIO(base64.b64decode(base_64_input))
     return Image.open(bytes_io)
 
+
 class LlavaHFGenerator(HuggingFaceLocalGenerator):
     """
     Generator based on a Llava Hugging Face model loaded.
@@ -56,7 +57,7 @@ class LlavaHFGenerator(HuggingFaceLocalGenerator):
         token: Optional[Secret] = Secret.from_env_var("HF_API_TOKEN", strict=False),
         generation_kwargs: Optional[Dict[str, Any]] = None,
         huggingface_pipeline_kwargs: Optional[Dict[str, Any]] = None,
-        stop_words: Optional[List[str]] = None
+        stop_words: Optional[List[str]] = None,
     ):
         """
         Creates an instance of a LlavaHFGenerator.
@@ -112,7 +113,11 @@ class LlavaHFGenerator(HuggingFaceLocalGenerator):
             del self.generation_kwargs["stopping_criteria"]
 
         self.processor = AutoProcessor.from_pretrained(model)
-        image_tokens = [v for v in self.processor.tokenizer.added_tokens_decoder.values() if "image" in v.content]
+        image_tokens = [
+            v
+            for v in self.processor.tokenizer.added_tokens_decoder.values()
+            if "image" in v.content
+        ]
         assert len(image_tokens) > 0, "No image token found in the tokenizer"
         self.image_token = image_tokens[0].content
 
@@ -208,6 +213,7 @@ class LlavaHFGenerator(HuggingFaceLocalGenerator):
         user_text += chat_snippet["Human"]
         return user_text
 
+
 class LlamaHFGenerator(LlavaHFGenerator):
     @component.output_types(replies=List[str])
     def run(
@@ -258,24 +264,21 @@ class LlamaHFGenerator(LlavaHFGenerator):
 
             print(f"USING {len(raw_images)=}!!!!!!!!")
             inputs = self.processor(
-                images=raw_images,
-                text=prompt,
-                add_special_tokens=False,
-                return_tensors="pt"
+                images=raw_images, text=prompt, add_special_tokens=False, return_tensors="pt"
             )
         else:
             inputs = self.processor(
-                images=None,
-                text=prompt,
-                add_special_tokens=False,
-                return_tensors="pt"
+                images=None, text=prompt, add_special_tokens=False, return_tensors="pt"
             )
 
         updated_generation_kwargs["max_length"] = updated_generation_kwargs.get("max_length", 32000)
         print(f"{prompt=}")
         stop_strings = self.stopping_criteria_list[0].stop_words_text
         output = self.pipeline.model.generate(
-            **inputs, stop_strings=stop_strings, tokenizer=self.processor.tokenizer, **updated_generation_kwargs
+            **inputs,
+            stop_strings=stop_strings,
+            tokenizer=self.processor.tokenizer,
+            **updated_generation_kwargs,
         )
 
         replies = self.processor.batch_decode(
@@ -295,6 +298,7 @@ class LlamaHFGenerator(LlavaHFGenerator):
             ]
 
         return {"replies": replies, "raw_images": raw_images}
+
 
 class Phi35VisionHFGenerator(HuggingFaceLocalGenerator):
     """

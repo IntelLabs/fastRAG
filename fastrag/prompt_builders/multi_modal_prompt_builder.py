@@ -32,9 +32,7 @@ class MultiModalPromptBuilder(PromptBuilder):
         """
         prompt_dict = {"prompt": self.template.render(kwargs)}
 
-        prompt_dict["images"] = [
-            doc.meta["image_base64"] for doc in kwargs["documents"]
-        ]
+        prompt_dict["images"] = [doc.meta["image_base64"] for doc in kwargs["documents"]]
 
         return prompt_dict
 

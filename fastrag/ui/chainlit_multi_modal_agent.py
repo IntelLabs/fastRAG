@@ -72,20 +72,18 @@ async def main(message: cl.Message):
     global current_settings
 
     def parse_element(element, params):
-        
         if "json" in element.mime:
             params["docs"] = json.load(open(element.path, "r"))
-        
+
         if any([image_suffix in element.mime for image_suffix in ["png", "jpeg", "jpg"]]):
             if "docs" not in params:
                 params["docs"] = []
-            
+
             image_element = {
                 "content": element.path,
             }
-            
+
             params["docs"].append(image_element)
-            
 
     # params for the agent
     params = {}
@@ -108,7 +106,11 @@ async def main(message: cl.Message):
 
         # display retrieved image, if exists
         additional_params = agent.memory.list[-1].get("additional_params", None)
-        if additional_params and "images" in additional_params and len(additional_params["images"]) > 0:
+        if (
+            additional_params
+            and "images" in additional_params
+            and len(additional_params["images"]) > 0
+        ):
             image_elements = add_images_to_message(additional_params)
 
             _ = await cl.Message(

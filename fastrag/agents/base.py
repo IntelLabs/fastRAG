@@ -421,3 +421,8 @@ class Agent:
         return AgentStep(
             max_steps=max_steps or self.max_steps, final_answer_pattern=self.final_answer_pattern
         )
+
+    def clear(self):
+        self.memory.clear()
+        self.tm.clear_tool_history()
+

@@ -1,9 +1,16 @@
+import base64
+from io import BytesIO
 from haystack.components.embedders import SentenceTransformersDocumentEmbedder, SentenceTransformersTextEmbedder
 import torch
 from typing import List
 from haystack import Document, component
 from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
+
+
+def base64_to_image(base_64_input):
+    bytes_io = BytesIO(base64.b64decode(base_64_input))
+    return Image.open(bytes_io)
 
 class BaseSentenceTransformersImageEmbedder(SentenceTransformersDocumentEmbedder):
     def warm_up(self):
@@ -21,7 +28,7 @@ class BaseSentenceTransformersImageEmbedder(SentenceTransformersDocumentEmbedder
 class SentenceTransformersImageEmbedder(BaseSentenceTransformersImageEmbedder, SentenceTransformersDocumentEmbedder):
     @component.output_types(documents=List[Document])
     def run(self, documents: List[Document]):
-        images = [Image.open(doc.content) for doc in documents]
+        images = [base64_to_image(doc.meta["image_base64"]) for doc in documents]
         inputs = self.processor(images=images, return_tensors="pt", padding=True)
         with torch.no_grad():
             embeddings = self.embeding_backend.get_image_features(**inputs)

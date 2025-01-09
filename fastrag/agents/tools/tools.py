@@ -6,6 +6,7 @@ from haystack.components.writers import DocumentWriter
 from tqdm import tqdm
 
 from fastrag.agents.base import Tool
+from fastrag.agents.tools.image_utils import get_base64_from_url
 from fastrag.agents.utils import Color, load_text
 from fastrag.embedders.image_embedders import SentenceTransformersImageEmbedder
 
@@ -191,7 +192,12 @@ class DocWithImageHaystackIndexTool(HaystackIndexTool):
 
     def example_to_doc(self, ex):
         return Document(
-            content=ex["content"], meta={"title": ex["title"], "image_url": ex["image_url"]}
+            content=ex["content"], 
+            meta={
+                "title": ex["title"], 
+                "image_url": ex["image_url"],
+                "image_base64": get_base64_from_url(ex["image_url"])
+            }
         )
 
 class ImageHaystackIndexTool(Tool):
@@ -223,7 +229,7 @@ class ImageHaystackIndexTool(Tool):
         elif isinstance(tool_input, dict) and "docs" in tool_input:
             tool_input = tool_input["docs"]
 
-        docs = [Document(content=element["content"]) for element in tool_input]
+        docs = [Document(content=element["content"], meta=dict(image_base64 = get_base64_from_url(element["content"]))) for element in tool_input]
         docs_with_embeddings = self.doc_embedder.run(docs)
         self.document_store.write_documents(docs_with_embeddings["documents"])
     

@@ -45,7 +45,7 @@ HaystackAgentCallbackHandler(agent)
 @cl.on_chat_end
 def chat_end():
     # clear memory
-    agent.memory.clear()
+    agent.clear()
 
 
 def add_images_to_message(additional_params):
